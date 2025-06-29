@@ -1,0 +1,11 @@
+Model Information:
+* title:	Abstract waves
+* source:	https://sketchfab.com/3d-models/abstract-waves-e7fb96866ba44c6db951e6b59959c348
+* author:	Pavan (https://sketchfab.com/pavangopa)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Abstract waves" (https://sketchfab.com/3d-models/abstract-waves-e7fb96866ba44c6db951e6b59959c348) by Pavan (https://sketchfab.com/pavangopa) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

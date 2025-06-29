@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40">
+  <rect width="180" height="40" fill="none"/>
+  <text x="5" y="25" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#7e22ce">Dust Drifters</text>
+  <path d="M165,10 C162,10 160,12 160,15 C160,18 162,20 165,20 C168,20 170,18 170,15 C170,12 168,10 165,10 Z" fill="#7e22ce"/>
+  <path d="M5,30 C3,30 2,31 2,32.5 C2,34 3,35 5,35 C7,35 8,34 8,32.5 C8,31 7,30 5,30 Z" fill="#7e22ce"/>
+  <path d="M175,30 C173,30 172,31 172,32.5 C172,34 173,35 175,35 C177,35 178,34 178,32.5 C178,31 177,30 175,30 Z" fill="#7e22ce"/>
+</svg> 
