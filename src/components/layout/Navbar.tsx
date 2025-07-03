@@ -210,7 +210,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Layout - Two Lines */}
-        <div className="lg:hidden overflow-hidden">
+        <div className="block lg:hidden">
           {/* Top Row: Larger Logo with Better Spacing */}
           <div className="flex justify-center -mt-32 -mb-32 sm:py-2 md:py-3">
             <Link href="/" className="flex items-center transform hover:scale-105 transition-transform duration-300">
