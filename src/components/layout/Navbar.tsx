@@ -93,20 +93,59 @@ const Navbar = () => {
                 <div
                   onMouseEnter={showDropdown}
                   onMouseLeave={hideDropdown}
-                  className="relative"
+                  className="relative flex items-center"
                 >
                   <Link href="/services" legacyBehavior>
                     <a
                       className="text-lg font-semibold text-slate-700 hover:text-blue-600 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-white/90 hover:shadow-sm backdrop-blur-sm flex items-center border border-transparent hover:border-blue-200 whitespace-nowrap"
-                      onClick={e => {
-                        // On desktop, allow navigation on click, but keep dropdown on hover
-                        setIsServicesOpen(false);
-                      }}
+                      onClick={() => setIsServicesOpen(false)}
+                      tabIndex={0}
                     >
                       Services
                       <svg className={`w-5 h-5 ml-1 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </a>
                   </Link>
+                  {/* Improved Dropdown Menu with better z-index */}
+                  <div 
+                    ref={dropdownRef}
+                    className={`absolute left-0 top-full w-80 transition-all duration-300 ease-out transform-gpu z-[999999] ${
+                      isServicesOpen 
+                        ? 'opacity-100 visible translate-y-0' 
+                        : 'opacity-0 invisible -translate-y-2'
+                    }`}
+                    onMouseEnter={cancelHide}
+                    onMouseLeave={hideDropdown}
+                    style={{ zIndex: 999999 }}
+                  >
+                    <div className="mt-2 bg-white backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+                      <div className="p-3">
+                        <div className="space-y-1">
+                          {serviceLinks.map((link) => (
+                            <Link 
+                              key={link.href}
+                              href={link.href} 
+                              className="group flex items-center p-3 rounded-lg hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all duration-200"
+                              onClick={() => setIsServicesOpen(false)}
+                            >
+                              <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm">
+                                {link.icon}
+                              </div>
+                              <div className="ml-3 flex-1">
+                                <span className="block text-slate-700 font-medium group-hover:text-blue-700 transition-colors duration-200">
+                                  {link.label}
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </li>
               <li>
