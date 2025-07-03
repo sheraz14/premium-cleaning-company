@@ -1,0 +1,278 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface TimeSlot {
+  time: string;
+  available: boolean;
+  duration?: string;
+}
+
+interface DateTimeSelectionProps {
+  selectedDate: Date | null;
+  selectedTime: string;
+  onDateChange: (date: Date) => void;
+  onTimeChange: (time: string) => void;
+  estimatedDuration?: string;
+}
+
+export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
+  selectedDate,
+  selectedTime,
+  onDateChange,
+  onTimeChange,
+  estimatedDuration = "2-4 hours"
+}) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const timeSlots: TimeSlot[] = [
+    { time: "8:00 AM", available: true, duration: "8:00 AM - 12:00 PM" },
+    { time: "9:00 AM", available: true, duration: "9:00 AM - 1:00 PM" },
+    { time: "10:00 AM", available: false, duration: "10:00 AM - 2:00 PM" },
+    { time: "11:00 AM", available: true, duration: "11:00 AM - 3:00 PM" },
+    { time: "12:00 PM", available: true, duration: "12:00 PM - 4:00 PM" },
+    { time: "1:00 PM", available: true, duration: "1:00 PM - 5:00 PM" },
+    { time: "2:00 PM", available: false, duration: "2:00 PM - 6:00 PM" },
+    { time: "3:00 PM", available: true, duration: "3:00 PM - 7:00 PM" },
+  ];
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const days: Date[] = [];
+    const current = new Date(startDate);
+    
+    while (current <= lastDay || current.getDay() !== 0) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+      if (days.length > 42) break;
+    }
+    
+    return days;
+  };
+
+  const isDateAvailable = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    // Not available if before today or more than 30 days in the future
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 30);
+    
+    return checkDate >= today && checkDate <= maxDate && date.getDay() !== 0; // No Sundays
+  };
+
+  const isDateSelected = (date: Date) => {
+    if (!selectedDate) return false;
+    return date.toDateString() === selectedDate.toDateString();
+  };
+
+  const formatMonth = (date: Date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const days = getDaysInMonth(currentMonth);
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Choose Your Date & Time
+        </h2>
+        <p className="text-lg text-gray-600">
+          Select when you'd like your cleaning service (estimated {estimatedDuration})
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Calendar */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                  <span>Select Date</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(currentMonth);
+                      prev.setMonth(prev.getMonth() - 1);
+                      setCurrentMonth(prev);
+                    }}
+                    className="p-1 rounded hover:bg-gray-100"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="font-semibold min-w-40 text-center">
+                    {formatMonth(currentMonth)}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const next = new Date(currentMonth);
+                      next.setMonth(next.getMonth() + 1);
+                      setCurrentMonth(next);
+                    }}
+                    className="p-1 rounded hover:bg-gray-100"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {dayNames.map(day => (
+                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((date, index) => {
+                  const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+                  const isAvailable = isDateAvailable(date);
+                  const isSelected = isDateSelected(date);
+                  
+                  return (
+                    <motion.button
+                      key={index}
+                      whileHover={isAvailable ? { scale: 1.1 } : {}}
+                      whileTap={isAvailable ? { scale: 0.95 } : {}}
+                      onClick={() => isAvailable && onDateChange(date)}
+                      disabled={!isAvailable}
+                      className={`
+                        p-2 text-sm rounded-lg transition-all duration-200
+                        ${!isCurrentMonth 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : isSelected
+                            ? 'bg-purple-600 text-white font-semibold'
+                            : isAvailable
+                              ? 'hover:bg-purple-50 hover:text-purple-700 text-gray-700'
+                              : 'text-gray-300 cursor-not-allowed line-through'
+                        }
+                      `}
+                    >
+                      {date.getDate()}
+                    </motion.button>
+                  );
+                })}
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                <p>• Sundays are not available</p>
+                <p>• Bookings available up to 30 days in advance</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Time Slots */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-purple-600" />
+                <span>Select Time</span>
+              </CardTitle>
+              {selectedDate && (
+                <p className="text-sm text-gray-600">
+                  {selectedDate.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!selectedDate ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Please select a date first</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {timeSlots.map((slot, index) => (
+                    <motion.button
+                      key={slot.time}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => slot.available && onTimeChange(slot.time)}
+                      disabled={!slot.available}
+                      className={`
+                        w-full p-4 rounded-lg border text-left transition-all duration-200
+                        ${selectedTime === slot.time
+                          ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                          : slot.available
+                            ? 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                            : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`font-semibold ${
+                            slot.available ? 'text-gray-900' : 'text-gray-400'
+                          }`}>
+                            {slot.time}
+                          </p>
+                          <p className={`text-sm ${
+                            slot.available ? 'text-gray-600' : 'text-gray-400'
+                          }`}>
+                            {slot.duration}
+                          </p>
+                        </div>
+                        {!slot.available && (
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                            Booked
+                          </span>
+                        )}
+                        {selectedTime === slot.time && (
+                          <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          </div>
+                        )}
+                      </div>
+                    </motion.button>
+                  ))}
+                  
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">
+                      What to expect:
+                    </h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Our team will arrive at your selected time</li>
+                      <li>• Service duration: {estimatedDuration}</li>
+                      <li>• We'll call 30 minutes before arrival</li>
+                      <li>• All cleaning supplies included</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+}; 

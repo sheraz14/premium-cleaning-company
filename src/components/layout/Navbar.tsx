@@ -14,6 +14,7 @@ const serviceLinks = [
   { href: '/post-renovation-cleaning-services', label: 'Post-Renovation Cleaning', icon: '🔨' },
   { href: '/eco-friendly-cleaning-services', label: 'Eco-Friendly Cleaning', icon: '🌿' },
   { href: '/rental-cleaning-services', label: 'Rental Cleaning', icon: '🔑' },
+  { href: '/complete-cleaning-checklist', label: 'Cleaning Checklist', icon: '📝' },
 ];
 
 const Navbar = () => {
@@ -23,10 +24,8 @@ const Navbar = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleBookNowClick = () => {
-    const bookingSection = document.getElementById('booking-section');
-    if (bookingSection) {
-      bookingSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Navigate to the dedicated book-now page
+    window.location.href = '/book-now';
   };
 
   // Improved dropdown logic
@@ -64,7 +63,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-slate-50 via-white to-blue-50 border-b-2 border-slate-200/60 relative shadow-lg backdrop-blur-sm z-[100]">
+      <header className="bg-gradient-to-r from-slate-50 via-white to-blue-50 border-b-2 border-slate-200/60 relative shadow-lg backdrop-blur-sm z-[1050]">
         <div className="w-full max-w-none px-2 sm:px-4 xl:px-6">
         {/* Desktop Layout */}
         <div className="hidden lg:flex items-center justify-between h-20">
@@ -104,14 +103,14 @@ const Navbar = () => {
                   {/* Improved Dropdown Menu with better z-index */}
                   <div 
                     ref={dropdownRef}
-                    className={`absolute left-0 top-full w-80 transition-all duration-300 ease-out transform-gpu z-[99999] ${
+                    className={`absolute left-0 top-full w-80 transition-all duration-300 ease-out transform-gpu z-[1100] ${
                       isServicesOpen 
                         ? 'opacity-100 visible translate-y-0' 
                         : 'opacity-0 invisible -translate-y-2'
                     }`}
                     onMouseEnter={cancelHide}
                     onMouseLeave={hideDropdown}
-                    style={{ zIndex: 99999 }}
+                    style={{ zIndex: 1100 }}
                   >
                     <div className="mt-2 bg-white backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
                       <div className="p-3">
@@ -170,15 +169,15 @@ const Navbar = () => {
           {/* Desktop Action Buttons */}
           <div className="flex items-center space-x-2">
             {/* Book Now Button - matching screenshot style */}
-            <button 
-              onClick={handleBookNowClick} 
+            <Link 
+              href="/book-now"
               className="group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg transform whitespace-nowrap flex items-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>Book Now</span>
-            </button>
+            </Link>
 
             {/* Call Button - matching screenshot style */}
             <a 
@@ -206,7 +205,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Layout - Two Lines */}
-        <div className="lg:hidden">
+        <div className="lg:hidden overflow-hidden">
           {/* Top Row: Larger Logo with Better Spacing */}
           <div className="flex justify-center -mt-32 -mb-32 sm:py-2 md:py-3">
             <Link href="/" className="flex items-center transform hover:scale-105 transition-transform duration-300">
@@ -237,8 +236,8 @@ const Navbar = () => {
             </a>
 
             {/* Enhanced Book Now Button */}
-            <button 
-              onClick={handleBookNowClick} 
+            <Link 
+              href="/book-now"
               className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold px-5 py-3.5 rounded-xl transition-all duration-300 ease-out hover:shadow-xl hover:scale-105 transform whitespace-nowrap backdrop-blur-sm flex items-center space-x-2.5 border border-blue-400/30 shadow-lg"
             >
               <div className="p-1 bg-white/20 rounded-lg">
@@ -247,7 +246,7 @@ const Navbar = () => {
                 </svg>
               </div>
               <span className="font-semibold">Book Now</span>
-            </button>
+            </Link>
 
             {/* Enhanced Menu Button */}
             <button 

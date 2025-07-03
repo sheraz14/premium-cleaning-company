@@ -56,6 +56,15 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import Script from "next/script";
 import { Waves } from "@/components/ui/waves";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Simple date formatter function to replace date-fns
 function formatDate(date: Date): string {
@@ -113,6 +122,21 @@ const serviceOptions: ServiceOption[] = [
   }
 ];
 
+interface AddOn {
+  id: string;
+  label: string;
+  price: number;
+}
+
+const addOns: AddOn[] = [
+  { id: "inside-fridge", label: "Inside Fridge", price: 25 },
+  { id: "inside-oven", label: "Inside Oven", price: 25 },
+  { id: "inside-cabinets", label: "Inside Cabinets", price: 40 },
+  { id: "laundry", label: "Laundry (per load)", price: 20 },
+  { id: "deep-cleaning", label: "Deep Cleaning", price: 60 },
+  { id: "window-cleaning", label: "Interior Windows", price: 35 },
+];
+
 interface TimeSlot {
   time: string;
   available: boolean;
@@ -143,6 +167,8 @@ export function BookingForm() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [totalPrice, setTotalPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -188,13 +214,38 @@ export function BookingForm() {
       setTime(null);
       setMessage("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "There was an error submitting your booking. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "There was an error submitting your booking. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedService = serviceOptions.find(option => option.value === serviceType);
+  const selectedService = serviceOptions.find(
+    (option) => option.value === serviceType
+  );
+
+  const handleAddOnToggle = (addOnId: string) => {
+    setSelectedAddOns((prev) =>
+      prev.includes(addOnId)
+        ? prev.filter((id) => id !== addOnId)
+        : [...prev, addOnId]
+    );
+  };
+
+  useEffect(() => {
+    const basePrice = selectedService
+      ? parseFloat(selectedService.startingPrice.replace("From $", ""))
+      : 0;
+    const addOnsPrice = selectedAddOns.reduce((total, addOnId) => {
+      const addOn = addOns.find((a) => a.id === addOnId);
+      return total + (addOn ? addOn.price : 0);
+    }, 0);
+    setTotalPrice(basePrice + addOnsPrice);
+  }, [serviceType, selectedAddOns, selectedService]);
 
   return (
     <section className="w-full relative overflow-hidden bg-gradient-to-b from-slate-50 to-white mb-[-5rem]">
@@ -248,294 +299,295 @@ export function BookingForm() {
               className="mx-auto mt-1 max-w-2xl"
             >
               <p className="text-xl text-gray-700 leading-relaxed bg-white/10 backdrop-blur-sm p-4 rounded-xl shadow-sm">
-                Book your <span className="font-semibold text-purple-700">professional cleaning</span> service in minutes. We're here to make your space sparkle!
+                Choose your desired service and we'll handle the rest.
               </p>
             </motion.div>
           </div>
 
-          {isSuccess ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-2xl mx-auto"
-            >
-              <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 shadow-2xl relative overflow-hidden border border-slate-200">
-                <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
-                <div className="relative z-10">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <CheckCircle className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-center mb-4">Booking Confirmed!</h3>
-                  <p className="text-center text-slate-600 mb-6">
-                    Thank you for choosing our cleaning services. We'll contact you shortly to confirm your appointment.
-                  </p>
-                  <Button 
-                    onClick={() => setIsSuccess(false)} 
-                    className="w-full py-6 text-lg rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg transition-all duration-300"
-                  >
-                    Book Another Service
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="max-w-6xl mx-auto"
-            >
-              <div className="bg-white/80 backdrop-blur-lg rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-slate-200/60 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5" />
-                
-                {/* Service selection */}
-                <div className="relative">
-                  <div className="text-center mb-6">
-                    <h3 className="text-3xl font-extrabold relative inline-block">
-                      <span className="relative z-10 text-slate-800">Choose Your Service</span>
-                      <span className="absolute -bottom-1 left-0 right-0 h-4 bg-purple-300 opacity-40 transform -rotate-1"></span>
-                      <span className="absolute -bottom-1 left-0 right-0 h-4 bg-pink-300 opacity-30 transform rotate-1"></span>
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {serviceOptions.map((option, index) => {
-                      return (
-                        <motion.button
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: index * 0.1 }}
-                          type="button"
-                          key={option.value}
-                          onClick={() => setServiceType(option.value)}
-                          className={cn(
-                            "relative group flex flex-col items-center justify-between p-6 rounded-2xl border transition-all duration-300",
-                            serviceType === option.value 
-                              ? "border-purple-400/50 bg-purple-50/50 shadow-lg scale-[1.02]" 
-                              : "border-slate-200 hover:border-purple-300/50 hover:bg-purple-50/30"
-                          )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Service Selection */}
+                <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30"
+                    >
+                      <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                        1. Choose Your Service
+                      </h2>
+                      <Select
+                        value={serviceType}
+                        onValueChange={(value) =>
+                          setServiceType(value as ServiceType)
+                        }
+                      >
+                        <SelectTrigger className="w-full text-lg py-6 bg-white/50">
+                          <SelectValue placeholder="Select a service" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white backdrop-blur-lg shadow-xl border-white/30">
+                          {serviceOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <div className="flex items-center gap-3 py-2">
+                                <option.icon className="w-5 h-5 text-purple-600" />
+                                <span>{option.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </motion.div>
+                {/* Add-ons */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30"
+                >
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    2. Add Extras
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {addOns.map((addOn) => (
+                      <div
+                        key={addOn.id}
+                        className="flex items-center space-x-3 bg-white/50 p-3 rounded-lg"
+                      >
+                        <Checkbox
+                          id={addOn.id}
+                          checked={selectedAddOns.includes(addOn.id)}
+                          onCheckedChange={() => handleAddOnToggle(addOn.id)}
+                        />
+                        <label
+                          htmlFor={addOn.id}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-grow"
                         >
-                          <div className={cn(
-                            "flex items-center justify-center w-14 h-14 rounded-2xl mb-4 transition-colors duration-300",
-                            serviceType === option.value 
-                              ? "bg-purple-500 text-white" 
-                              : "bg-slate-100 text-slate-600 group-hover:bg-purple-500 group-hover:text-white"
-                          )}>
-                            <option.icon className="h-7 w-7" />
-                          </div>
-                          <div className="text-center">
-                            <h4 className="font-semibold mb-2">{option.label}</h4>
-                            <p className="text-sm text-slate-600 mb-3">{option.description}</p>
-                            <span className="text-sm font-medium text-purple-600">{option.startingPrice}</span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
+                          {addOn.label}
+                        </label>
+                        <span className="text-sm font-semibold text-purple-600">
+                          +${addOn.price}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                </div>
-
-                {/* Booking form */}
-                <form onSubmit={handleSubmit} className="mt-8 relative">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Contact Information */}
-                    <div className="space-y-6">
-                      <h3 className="text-xl font-semibold mb-6 text-slate-800">Contact Information</h3>
-                      <div className="space-y-4">
+                </motion.div>
+                {/* Personal Information */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30"
+                >
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    3. Your Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <Input
+                        type="text"
+                        placeholder="Full Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Your name"
+                        className="pl-10"
                             required
-                            className="pl-12 h-14 rounded-xl bg-white border-slate-200 focus:border-purple-400 focus:ring-purple-400/20"
                           />
                         </div>
                         <div className="relative">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <Input
                             type="email"
+                        placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email address"
+                        className="pl-10"
                             required
-                            className="pl-12 h-14 rounded-xl bg-white border-slate-200 focus:border-purple-400 focus:ring-purple-400/20"
                           />
                         </div>
                         <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <Input
                             type="tel"
+                        placeholder="Phone Number"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            placeholder="Phone number"
+                        className="pl-10"
                             required
-                            className="pl-12 h-14 rounded-xl bg-white border-slate-200 focus:border-purple-400 focus:ring-purple-400/20"
                           />
                         </div>
-                        
-                        {/* Address Input with Autocomplete */}
                         <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <Input
+                        type="text"
+                        placeholder="Full Address"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
-                            placeholder="Address"
+                        className="pl-10"
                             required
-                            className="pl-12 h-14 rounded-xl bg-white border-slate-200 focus:border-purple-400 focus:ring-purple-400/20"
-                            autoComplete="off"
                           />
                         </div>
                       </div>
-                    </div>
-
-                    {/* Schedule */}
-                    <div className="space-y-6">
-                      <h3 className="text-xl font-semibold mb-6 text-slate-800">Schedule Your Service</h3>
-                      <div className="rounded-lg border border-slate-200">
-                        <div className="flex max-sm:flex-col">
+                </motion.div>
+                {/* Date and Time */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30"
+                >
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    4. Schedule Your Cleaning
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left font-normal h-12",
+                            !date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {date ? (
+                            formatDate(date)
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-white/80 backdrop-blur-lg">
                           <Calendar
                             mode="single"
                             selected={date}
-                            onSelect={(newDate) => {
-                              if (newDate) {
-                                setDate(newDate);
-                                setTime(null);
-                              }
-                            }}
-                            className="p-2 sm:pe-5 bg-white rounded-l-lg"
-                            disabled={[{ before: new Date() }]}
-                            modifiers={{
-                              selected: date,
-                            }}
-                            modifiersStyles={{
-                              selected: {
-                                backgroundColor: "rgb(147, 51, 234)", // purple-600
-                                color: "white",
-                                borderRadius: "0.5rem",
-                              }
-                            }}
-                            styles={{
-                              day_today: {
-                                fontWeight: "bold",
-                                border: "1px solid rgb(147, 51, 234)",
-                                borderRadius: "0.5rem",
-                              },
-                              day_selected: {
-                                backgroundColor: "rgb(147, 51, 234) !important",
-                                color: "white !important",
-                                borderRadius: "0.5rem !important",
-                                fontWeight: "bold",
-                              }
-                            }}
-                            fromDate={new Date()}
-                            showOutsideDays={false}
-                          />
-                          <div className="relative w-full max-sm:h-48 sm:w-40">
-                            <div className="absolute inset-0 py-4 max-sm:border-t border-slate-200">
-                              <ScrollArea className="h-full sm:border-s border-slate-200">
-                                <div className="space-y-3">
-                                  <div className="flex h-5 shrink-0 items-center px-5">
-                                    <p className="text-sm font-medium">
-                                      {date ? format(date, "EEEE, d") : "Select a date"}
-                                    </p>
-                                  </div>
-                                  <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
+                          onSelect={setDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <ScrollArea className="h-40 rounded-md border border-gray-200">
+                      <div className="p-4 space-y-2">
                                     {timeSlots.map((slot) => (
                                       <Button
                                         key={slot.time}
-                                        variant={time === slot.time ? "default" : "outline"}
-                                        size="sm"
-                                        className={cn(
-                                          "w-full",
-                                          time === slot.time 
-                                            ? "bg-purple-500 hover:bg-purple-600 text-white" 
-                                            : "hover:border-purple-400/50 hover:bg-purple-50/50"
-                                        )}
+                            variant={
+                              time === slot.time ? "default" : "outline"
+                            }
+                            className="w-full justify-start"
                                         onClick={() => setTime(slot.time)}
                                         disabled={!slot.available}
                                       >
+                            <Clock className="mr-2 h-4 w-4" />
                                         {slot.time}
                                       </Button>
                                     ))}
-                                  </div>
                                 </div>
                               </ScrollArea>
                             </div>
+                </motion.div>
+                {/* Special Instructions */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30"
+                >
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    5. Special Instructions (Optional)
+                  </h2>
+                  <Textarea
+                    placeholder="e.g., focus on the kitchen, key under the mat..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={4}
+                  />
+                </motion.div>
+              </form>
+                          </div>
+                <div className="lg:col-span-1">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.7 }}
+                    className="bg-white/50 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/30 sticky top-24"
+                  >
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-3">
+                      Booking Summary
+                    </h3>
+                    {selectedService ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-purple-100 p-3 rounded-lg">
+                            <selectedService.icon className="w-6 h-6 text-purple-700" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-lg text-gray-800">
+                              {selectedService.label}
+                            </p>
                           </div>
                         </div>
+                        <div className="border-t pt-4 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Base Price</span>
+                            <span className="font-medium">
+                              $
+                              {parseFloat(
+                                selectedService.startingPrice.replace("From $", "")
+                              ).toFixed(2)}
+                            </span>
+                          </div>
+                          {selectedAddOns.map((addOnId) => {
+                            const addOn = addOns.find((a) => a.id === addOnId);
+                            return (
+                              <div
+                                key={addOnId}
+                                className="flex justify-between text-sm"
+                              >
+                                <span className="text-gray-600">
+                                  {addOn?.label}
+                                </span>
+                                <span className="font-medium">
+                                  +${addOn?.price.toFixed(2)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="border-t pt-4">
+                          <p className="text-sm text-gray-600">Total</p>
+                          <p className="text-3xl font-bold text-purple-700">
+                            ${totalPrice.toFixed(2)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Additional notes - Full width section */}
-                  <div className="mt-8">
-                    <h3 className="text-xl font-semibold mb-4 text-slate-800">Additional Notes</h3>
-                    <Textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Additional notes or special requests (optional)"
-                      className="min-h-[120px] rounded-xl bg-white border-slate-200 focus:border-purple-400 focus:ring-purple-400/20 w-full"
-                    />
-                  </div>
-
-                  {error && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600"
-                    >
-                      {error}
-                    </motion.div>
-                  )}
-
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="mt-8 flex justify-center"
-                  >
-                    <button
+                    ) : (
+                      <p className="text-gray-500">
+                        Select a service to see the summary.
+                      </p>
+                    )}
+                    <Button
                       type="submit"
-                      disabled={isSubmitting || !date || !time}
-                      className="relative bg-[#4b48ff] text-white font-bold text-[19px] max-w-xl w-[500px] py-[0.35em] pl-6 h-[3em] rounded-[0.9em] flex items-center overflow-hidden cursor-pointer shadow-[inset_0_0_1.6em_-0.6em_#714da6] hover:bg-[#3a37e0] group disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                      className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:scale-105 transition-transform"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        <span className="flex items-center w-full justify-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Processing...
-                        </span>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
-                        <>
-                          <span className="mx-auto pr-8">Book Now</span>
-                          <div
-                            className="absolute right-[0.3em] bg-white h-[2.4em] w-[2.4em] rounded-[0.7em] flex items-center justify-center transition-all duration-300 group-hover:w-[calc(100%-0.6em)] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] group-disabled:pointer-events-none group-active:scale-95"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
-                              className="w-[1.3em] transition-transform duration-300 text-[#7b52b9] group-hover:translate-x-[0.1em]"
-                            >
-                              <path fill="none" d="M0 0h24v24H0z"></path>
-                              <path
-                                fill="currentColor"
-                                d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
-                              ></path>
-                            </svg>
-                          </div>
-                        </>
+                        <ArrowRight className="mr-2 h-4 w-4" />
                       )}
-                    </button>
+                      Book Now
+                    </Button>
+                    {isSuccess && (
+                      <p className="text-green-600 mt-4 flex items-center">
+                        <CheckCircle className="mr-2" /> Booking submitted!
+                      </p>
+                    )}
+                    {error && <p className="text-red-600 mt-4">{error}</p>}
                   </motion.div>
-                </form>
+                </div>
               </div>
-            </motion.div>
-          )}
         </div>
       </div>
       {/* Section bottom gradient rule */}
