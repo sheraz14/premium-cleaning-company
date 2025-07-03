@@ -14,7 +14,7 @@ const serviceLinks = [
   { href: '/post-renovation-cleaning-services', label: 'Post-Renovation Cleaning', icon: '🔨' },
   { href: '/eco-friendly-cleaning-services', label: 'Eco-Friendly Cleaning', icon: '🌿' },
   { href: '/rental-cleaning-services', label: 'Rental Cleaning', icon: '🔑' },
-  { href: '/complete-cleaning-checklist', label: 'Cleaning Checklist', icon: '📝' },
+  { href: '/complete-cleaning-checklist', label: 'Cleaning Checklist', icon: '📋' },
 ];
 
 const Navbar = () => {
@@ -63,7 +63,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-slate-50 via-white to-blue-50 border-b-2 border-slate-200/60 relative shadow-lg backdrop-blur-sm z-[1050]">
+      <header className="bg-gradient-to-r from-slate-50 via-white to-blue-50 border-b-2 border-slate-200/60 relative shadow-lg backdrop-blur-sm z-[999999]">
         <div className="w-full max-w-none px-2 sm:px-4 xl:px-6">
         {/* Desktop Layout */}
         <div className="hidden lg:flex items-center justify-between h-20">
@@ -95,52 +95,18 @@ const Navbar = () => {
                   onMouseLeave={hideDropdown}
                   className="relative"
                 >
-                  <button className="text-lg font-semibold text-slate-700 hover:text-blue-600 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-white/90 hover:shadow-sm backdrop-blur-sm flex items-center border border-transparent hover:border-blue-200 whitespace-nowrap">
-                    Services
-                    <svg className={`w-5 h-5 ml-1 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-
-                  {/* Improved Dropdown Menu with better z-index */}
-                  <div 
-                    ref={dropdownRef}
-                    className={`absolute left-0 top-full w-80 transition-all duration-300 ease-out transform-gpu z-[1100] ${
-                      isServicesOpen 
-                        ? 'opacity-100 visible translate-y-0' 
-                        : 'opacity-0 invisible -translate-y-2'
-                    }`}
-                    onMouseEnter={cancelHide}
-                    onMouseLeave={hideDropdown}
-                    style={{ zIndex: 1100 }}
-                  >
-                    <div className="mt-2 bg-white backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
-                      <div className="p-3">
-                        <div className="space-y-1">
-                          {serviceLinks.map((link) => (
-                            <Link 
-                              key={link.href}
-                              href={link.href} 
-                              className="group flex items-center p-3 rounded-lg hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all duration-200"
-                              onClick={() => setIsServicesOpen(false)}
-                            >
-                              <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm">
-                                {link.icon}
-                              </div>
-                              <div className="ml-3 flex-1">
-                                <span className="block text-slate-700 font-medium group-hover:text-blue-700 transition-colors duration-200">
-                                  {link.label}
-                                </span>
-                              </div>
-                              <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <Link href="/services" legacyBehavior>
+                    <a
+                      className="text-lg font-semibold text-slate-700 hover:text-blue-600 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-white/90 hover:shadow-sm backdrop-blur-sm flex items-center border border-transparent hover:border-blue-200 whitespace-nowrap"
+                      onClick={e => {
+                        // On desktop, allow navigation on click, but keep dropdown on hover
+                        setIsServicesOpen(false);
+                      }}
+                    >
+                      Services
+                      <svg className={`w-5 h-5 ml-1 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </a>
+                  </Link>
                 </div>
               </li>
               <li>
@@ -284,15 +250,20 @@ const Navbar = () => {
                
                {/* Services Dropdown - Right after About Us */}
                <div className={`transform transition-all duration-500 ease-out ${isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'} delay-100`}>
-                 <button 
-                   onClick={() => setIsServicesOpen(!isServicesOpen)} 
-                   className="w-full text-left flex justify-between items-center px-4 py-2.5 rounded-lg text-base font-semibold text-slate-700 hover:bg-blue-100/80 hover:text-blue-700 transition-all duration-300 border border-transparent hover:border-blue-200 backdrop-blur-sm"
-                 >
-                   Services
-                   <svg className={`w-5 h-5 transform transition-all duration-300 ${isServicesOpen ? 'rotate-180 text-blue-600' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                   </svg>
-                 </button>
+                 <Link href="/services" legacyBehavior>
+                   <a
+                     onClick={() => {
+                       setIsMenuOpen(false);
+                       setIsServicesOpen(false);
+                     }}
+                     className="w-full text-left flex justify-between items-center px-4 py-2.5 rounded-lg text-base font-semibold text-slate-700 hover:bg-blue-100/80 hover:text-blue-700 transition-all duration-300 border border-transparent hover:border-blue-200 backdrop-blur-sm"
+                   >
+                     Services
+                     <svg className={`w-5 h-5 transform transition-all duration-300 ${isServicesOpen ? 'rotate-180 text-blue-600' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
+                   </a>
+                 </Link>
                  
                  {/* Services Submenu with Scrollable Container */}
                  <div className={`transition-all duration-300 ease-in-out ${isServicesOpen ? 'max-h-[25vh] opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
@@ -360,7 +331,7 @@ const Navbar = () => {
     <style jsx global>{`
       /* Ensure dropdown doesn't interfere with other elements */
       .group:hover .absolute {
-        z-index: 99999 !important;
+        z-index: 999999 !important;
       }
       
       /* Better mobile menu performance */

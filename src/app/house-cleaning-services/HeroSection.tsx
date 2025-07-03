@@ -40,7 +40,7 @@ export function HeroSection() {
       </div>
       {/* Gradient fade overlay for smooth transition (hidden on mobile) */}
       <div
-        className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden md:block"
+        className="absolute inset-0 w-full h-full z-0 pointer-events-auto hidden md:block"
         style={{
           background: "linear-gradient(to right, #f3f4f6 20%,rgb(242, 240, 242) 37%, rgba(243,244,246,0.05) 50%, transparent 70%)"
         }}
