@@ -180,7 +180,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({
               label="Full Bathrooms"
               value={bathrooms}
               onChange={onBathroomsChange}
-              min={1}
+              min={0}
               max={10}
               icon={Bath}
             />

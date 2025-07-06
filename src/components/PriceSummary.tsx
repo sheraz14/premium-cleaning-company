@@ -8,6 +8,14 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Home, Calendar, RotateCcw } from "lucide-react";
+import { addOns } from './booking/steps/CustomizeCleaning';
+
+interface AddOnSummary {
+  id: string;
+  label: string;
+  price: number;
+  quantity: number;
+}
 
 interface PriceSummaryProps {
   selectedService: {
@@ -25,6 +33,7 @@ interface PriceSummaryProps {
     halfBaths: string;
     basement: string;
   };
+  selectedAddOns?: { [id: string]: number };
 }
 
 export function PriceSummary({
@@ -33,6 +42,7 @@ export function PriceSummary({
   frequencyDiscount,
   totalPrice,
   propertyDetails,
+  selectedAddOns = {},
 }: PriceSummaryProps) {
   // Parse square footage from range string (e.g., "1000-1499" -> 1000)
   const getSqftFromRange = (sqftRange: string): number => {
@@ -128,6 +138,15 @@ export function PriceSummary({
     }
   }
   
+  // Build add-on summary list
+  const selectedAddOnList: AddOnSummary[] = Object.entries(selectedAddOns)
+    .filter(([_, qty]) => qty > 0)
+    .map(([id, qty]) => {
+      const addOn = addOns.find(a => a.id === id);
+      return addOn ? { id, label: addOn.label, price: addOn.price, quantity: qty } : null;
+    })
+    .filter(Boolean) as AddOnSummary[];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -210,6 +229,28 @@ export function PriceSummary({
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">• {basementLabel}</span>
               <span className="font-medium text-gray-900">+${basementCharge.toFixed(2)}</span>
+            </div>
+          )}
+
+          {/* Customizations / Add-ons */}
+          {selectedAddOnList.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-semibold text-gray-900 mb-2">Customizations</h4>
+              <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100 bg-gray-50">
+                {selectedAddOnList.map(addOn => (
+                  <li key={addOn.id} className="flex justify-between items-center px-4 py-2">
+                    <span className="text-gray-700">
+                      {addOn.label}
+                      {addOn.quantity > 1 && (
+                        <span className="ml-2 text-xs text-gray-500">x{addOn.quantity}</span>
+                      )}
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      +${(addOn.price * addOn.quantity).toFixed(2)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

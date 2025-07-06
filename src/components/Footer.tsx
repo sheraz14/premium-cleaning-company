@@ -102,7 +102,7 @@ export function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Company Info */}
             <div className="text-center lg:text-left">
-              <Link href="/" className="relative z-0 inline-block -mt-32 lg:-mt-52 -mb-10 lg:-mb-36 group">
+              <Link href="/" className="relative z-0 inline-block -mt-10 -lg:mt-10 mb-5 lg:-mb-20 group">
                 <Image 
                   src="/images/logo/logo2.svg" 
                   alt="Dust Drifters Logo" 
@@ -111,7 +111,7 @@ export function Footer() {
                   className="object-contain group-hover:scale-105 transition-transform duration-300 w-80 sm:w-96 md:w-[450px] lg:w-[500px] xl:w-[500px] h-26"
                 />
               </Link>
-              <p className="relative z-10 text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed max-w-md mx-auto lg:mx-0 -mt-8 lg:-mt-30">
+              <p className="relative z-10 text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed max-w-md mx-auto lg:mx-0 -mt-8 lg:mt-24">
                 Transforming spaces into sparkling sanctuaries. Your trusted partner for professional cleaning services.
               </p>
               

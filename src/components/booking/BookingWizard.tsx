@@ -10,6 +10,7 @@ import { PropertyDetails } from './steps/PropertyDetails';
 import { DateTimeSelection } from './steps/DateTimeSelection';
 import { PriceSummary } from '@/components/PriceSummary';
 import { CustomizeCleaning } from './steps/CustomizeCleaning';
+import { addOns as allAddOns } from './steps/CustomizeCleaning';
 
 interface BookingState {
   // Service Selection
@@ -36,7 +37,7 @@ interface BookingState {
   };
   
   // Additional Services/Extras (for future implementation)
-  extras: string[];
+  extras: { [id: string]: number };
   frequency: string;
   specialInstructions: string;
 }
@@ -45,7 +46,7 @@ const initialState: BookingState = {
   selectedService: '',
   squareFootage: '',
   bedrooms: 0,
-  bathrooms: 1,
+  bathrooms: 0,
   halfBaths: 0,
   basement: 'none',
   selectedDate: null,
@@ -57,7 +58,7 @@ const initialState: BookingState = {
     phone: '',
     address: '',
   },
-  extras: [],
+  extras: {},
   frequency: 'one-time',
   specialInstructions: '',
 };
@@ -170,8 +171,8 @@ export const BookingWizard: React.FC = () => {
       case 1:
         return bookingState.selectedService !== '';
       case 2:
-        return bookingState.squareFootage !== '' && bookingState.bathrooms > 0;
-      case 3:
+        return bookingState.squareFootage !== '';
+      case 4:
         return bookingState.selectedDate !== null && bookingState.selectedTime !== '';
       default:
         return true;
@@ -186,9 +187,7 @@ export const BookingWizard: React.FC = () => {
   // Calculate total price
   const calculateTotalPrice = useCallback(() => {
     if (!currentService) return 0;
-    
     let total = currentService.basePrice;
-    
     // Add square footage costs for house package
     if (currentService.id === 'house-package' && bookingState.squareFootage) {
       const sqftRange = bookingState.squareFootage;
@@ -200,61 +199,77 @@ export const BookingWizard: React.FC = () => {
           total += 40;
           break;
         case "2000-2999":
-          total += 70;
+          total += 60;
           break;
         case "3000-3999":
-          total += 110;
+          total += 80;
           break;
         case "4000-4999":
-          total += 150;
+          total += 100;
           break;
         case "5000-5999":
-          total += 200;
+          total += 120;
           break;
         case "6000-6999":
-          total += 280;
+          total += 140;
           break;
         case "7000-7999":
-          total += 380;
+          total += 160;
           break;
         case "8000-8999":
-          total += 480;
+          total += 180;
           break;
         case "9000-9999":
-          total += 580;
+          total += 200;
           break;
       }
     }
-    
     // Add room charges
     total += bookingState.bedrooms * 40;
-    total += bookingState.bathrooms * 30;
+    total += bookingState.bathrooms * 25;
     total += bookingState.halfBaths * 15;
-    
-    // Add basement charge
+    // Add basement charges
     switch (bookingState.basement) {
       case '500-no-bathroom':
         total += 30;
         break;
-      case '500-with-bathroom':
-        total += 70;
-        break;
       case '500-1000-no-bathroom':
         total += 40;
-        break;
-      case '500-1000-with-bathroom':
-        total += 80;
         break;
       case '1000+-no-bathroom':
         total += 50;
         break;
+      case '500-with-bathroom':
+        total += 70;
+        break;
+      case '500-1000-with-bathroom':
+        total += 80;
+        break;
       case '1000+-with-bathroom':
         total += 90;
         break;
-      default:
-        break;
     }
-    
+    // Add extras (add-ons)
+    for (const [id, qty] of Object.entries(bookingState.extras)) {
+      if (qty > 0) {
+        // For package add-ons, only add the extra price (not a full package price)
+        if ([
+          'deep-clean-package',
+          'move-in-out-package',
+          'renovation-cleaning-package',
+        ].includes(id)) {
+          const addOn = allAddOns.find(a => a.id === id);
+          if (addOn) {
+            total += addOn.price * qty;
+          }
+        } else {
+          const addOn = allAddOns.find(a => a.id === id);
+          if (addOn) {
+            total += addOn.price * qty;
+          }
+        }
+      }
+    }
     return total;
   }, [currentService, bookingState]);
 
@@ -304,15 +319,15 @@ export const BookingWizard: React.FC = () => {
           <motion.div {...commonProps} key="customize">
             <CustomizeCleaning
               selectedAddOns={bookingState.extras}
-              onToggleAddOn={(id) => {
+              onChangeAddOn={(id, quantity) => {
                 setBookingState(prev => {
-                  const exists = prev.extras.includes(id);
-                  return {
-                    ...prev,
-                    extras: exists
-                      ? prev.extras.filter(e => e !== id)
-                      : [...prev.extras, id]
-                  };
+                  const newExtras = { ...prev.extras };
+                  if (quantity > 0) {
+                    newExtras[id] = quantity;
+                  } else {
+                    delete newExtras[id];
+                  }
+                  return { ...prev, extras: newExtras };
                 });
               }}
             />
@@ -453,8 +468,9 @@ export const BookingWizard: React.FC = () => {
                     bedrooms: bookingState.bedrooms.toString(),
                     bathrooms: bookingState.bathrooms.toString(),
                     halfBaths: bookingState.halfBaths.toString(),
-                    basement: bookingState.basement
+                    basement: bookingState.basement,
                   }}
+                  selectedAddOns={bookingState.extras}
                 />
               </div>
             </motion.div>
