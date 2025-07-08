@@ -10,11 +10,16 @@ interface PropertyDetailsProps {
   bathrooms: number;
   halfBaths: number;
   basement: string;
+  hours: number;
+  numCleaners: number;
+  selectedService: string;
   onSquareFootageChange: (value: string) => void;
   onBedroomsChange: (value: number) => void;
   onBathroomsChange: (value: number) => void;
   onHalfBathsChange: (value: number) => void;
   onBasementChange: (value: string) => void;
+  onHoursChange: (value: number) => void;
+  onNumCleanersChange: (value: number) => void;
 }
 
 interface CounterProps {
@@ -106,11 +111,16 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({
   bathrooms,
   halfBaths,
   basement,
+  hours,
+  numCleaners,
+  selectedService,
   onSquareFootageChange,
   onBedroomsChange,
   onBathroomsChange,
   onHalfBathsChange,
   onBasementChange,
+  onHoursChange,
+  onNumCleanersChange,
 }) => {
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -124,6 +134,50 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({
       </div>
 
       <div className="space-y-6">
+        {/* Only show for house-hourly */}
+        {selectedService === 'house-hourly' && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-purple-600 font-bold text-lg">H</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Hours</h3>
+                      <p className="text-xs text-gray-500">Minimum 3 hours</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onHoursChange(Math.max(3, hours - 1))} disabled={hours <= 3} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors">-</motion.button>
+                    <span className="w-8 text-center font-semibold text-lg">{hours}</span>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onHoursChange(hours + 1)} className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white hover:bg-purple-700 transition-colors">+</motion.button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-purple-600 font-bold text-lg">C</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900"># of Cleaners</h3>
+                      <p className="text-xs text-gray-500">1-4 cleaners</p>
+                    </div>
+                  </div>
+                  <select value={numCleaners} onChange={e => onNumCleanersChange(Number(e.target.value))} className="w-20 p-2 rounded border border-gray-200 bg-white font-semibold">
+                    {[1,2,3,4].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+
         {/* Square Footage Selection */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

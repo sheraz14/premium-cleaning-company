@@ -83,29 +83,29 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Choose Your Date & Time
+    <div className="max-w-6xl mx-auto p-2 sm:p-6">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
+          Schedule Your Cleaning
         </h2>
-        <p className="text-lg text-gray-600">
-          Select when you'd like your cleaning service (estimated {estimatedDuration})
+        <p className="text-base sm:text-lg text-gray-600">
+          Select your preferred date and time for the cleaning. You'll receive a confirmation and can reschedule if needed.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid gap-4 sm:gap-8 lg:grid-cols-2">
         {/* Calendar */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card>
+          <Card className="shadow-sm border-gray-200">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5 text-purple-600" />
-                  <span>Select Date</span>
+                  <span className="font-semibold">Select Date</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -118,7 +118,7 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="font-semibold min-w-40 text-center">
+                  <span className="font-semibold min-w-32 text-center">
                     {formatMonth(currentMonth)}
                   </span>
                   <button
@@ -135,9 +135,9 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-1 mb-4">
+              <div className="grid grid-cols-7 gap-1 mb-2 sm:mb-4">
                 {dayNames.map(day => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+                  <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-500">
                     {day}
                   </div>
                 ))}
@@ -147,20 +147,19 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                   const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
                   const isAvailable = isDateAvailable(date);
                   const isSelected = isDateSelected(date);
-                  
                   return (
                     <motion.button
                       key={index}
-                      whileHover={isAvailable ? { scale: 1.1 } : {}}
-                      whileTap={isAvailable ? { scale: 0.95 } : {}}
+                      whileHover={isAvailable ? { scale: 1.08 } : {}}
+                      whileTap={isAvailable ? { scale: 0.96 } : {}}
                       onClick={() => isAvailable && onDateChange(date)}
                       disabled={!isAvailable}
                       className={`
-                        p-2 text-sm rounded-lg transition-all duration-200
+                        p-1 sm:p-2 text-xs sm:text-sm rounded-lg transition-all duration-200
                         ${!isCurrentMonth 
                           ? 'text-gray-300 cursor-not-allowed' 
                           : isSelected
-                            ? 'bg-purple-600 text-white font-semibold'
+                            ? 'bg-purple-600 text-white font-semibold ring-2 ring-purple-300'
                             : isAvailable
                               ? 'hover:bg-purple-50 hover:text-purple-700 text-gray-700'
                               : 'text-gray-300 cursor-not-allowed line-through'
@@ -172,7 +171,7 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                   );
                 })}
               </div>
-              <div className="mt-4 text-sm text-gray-500">
+              <div className="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-500">
                 <p>• Sundays are not available</p>
                 <p>• Bookings available up to 30 days in advance</p>
               </div>
@@ -186,14 +185,14 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card>
+          <Card className="shadow-sm border-gray-200">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Clock className="w-5 h-5 text-purple-600" />
-                <span>Select Time</span>
+                <span className="font-semibold">Select Time</span>
               </CardTitle>
               {selectedDate && (
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   {selectedDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     month: 'long', 
@@ -205,12 +204,12 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
             </CardHeader>
             <CardContent>
               {!selectedDate ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <div className="text-center py-6 sm:py-8 text-gray-500">
+                  <Clock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 opacity-50" />
                   <p>Please select a date first</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {timeSlots.map((slot, index) => (
                     <motion.button
                       key={slot.time}
@@ -220,12 +219,12 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                       onClick={() => slot.available && onTimeChange(slot.time)}
                       disabled={!slot.available}
                       className={`
-                        w-full p-4 rounded-lg border text-left transition-all duration-200
+                        w-full p-3 sm:p-4 rounded-lg border text-left transition-all duration-200
                         ${selectedTime === slot.time
-                          ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                          ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 font-bold text-purple-900'
                           : slot.available
                             ? 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                            : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+                            : 'border-gray-100 bg-gray-50 cursor-not-allowed text-gray-400'
                         }
                       `}
                     >
@@ -236,7 +235,7 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                           }`}>
                             {slot.time}
                           </p>
-                          <p className={`text-sm ${
+                          <p className={`text-xs sm:text-sm ${
                             slot.available ? 'text-gray-600' : 'text-gray-400'
                           }`}>
                             {slot.duration}
@@ -255,12 +254,11 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                       </div>
                     </motion.button>
                   ))}
-                  
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-semibold text-blue-900 mb-2">
+                  <div className="mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-1 sm:mb-2">
                       What to expect:
                     </h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
+                    <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                       <li>• Our team will arrive at your selected time</li>
                       <li>• Service duration: {estimatedDuration}</li>
                       <li>• We'll call 30 minutes before arrival</li>
@@ -272,6 +270,22 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      {/* Selection Summary & Note */}
+      <div className="mt-6 sm:mt-8 text-center">
+        {selectedDate && selectedTime ? (
+          <div className="inline-block bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-green-800 font-medium text-sm">
+            <span className="font-semibold">Selected:</span> {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} at {selectedTime}
+          </div>
+        ) : (
+          <div className="inline-block bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 text-yellow-800 font-medium text-sm">
+            Please select a date and time to continue.
+          </div>
+        )}
+        <div className="mt-3 text-xs text-gray-500">
+          Need to reschedule or cancel? You can do so up to 24 hours before your appointment.
+        </div>
       </div>
     </div>
   );

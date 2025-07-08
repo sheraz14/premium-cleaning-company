@@ -32,8 +32,14 @@ interface PriceSummaryProps {
     bathrooms: string;
     halfBaths: string;
     basement: string;
+    hours: number;
+    numCleaners: number;
   };
   selectedAddOns?: { [id: string]: number };
+  tip?: number;
+  frequency?: string;
+  selectedDate?: Date | null;
+  selectedTime?: string;
 }
 
 export function PriceSummary({
@@ -43,6 +49,10 @@ export function PriceSummary({
   totalPrice,
   propertyDetails,
   selectedAddOns = {},
+  tip = 0,
+  frequency = 'one-time',
+  selectedDate = null,
+  selectedTime = '',
 }: PriceSummaryProps) {
   // Parse square footage from range string (e.g., "1000-1499" -> 1000)
   const getSqftFromRange = (sqftRange: string): number => {
@@ -147,6 +157,72 @@ export function PriceSummary({
     })
     .filter(Boolean) as AddOnSummary[];
 
+  // Calculate final total including tip
+  const finalTotal = totalPrice + (tip || 0);
+
+  // Frequency label helper
+  const frequencyLabel = {
+    'one-time': 'One Time',
+    'weekly': 'Weekly',
+    'biweekly': 'Biweekly',
+    'monthly': 'Monthly',
+  }[frequency] || 'One Time';
+  const frequencyDiscountPercent = {
+    'weekly': '20%',
+    'biweekly': '15%',
+    'monthly': '10%',
+  };
+
+  const isRecurring = frequency !== 'one-time';
+  const subtotalLabel = isRecurring ? 'Initial Cleaning Fee' : 'Subtotal';
+  const grandTotalLabel = isRecurring ? 'Recurring Cleaning Fee' : 'Grand Total';
+
+  // Calculate pre-discount subtotal (before tip)
+  const preDiscountSubtotal = (() => {
+    let total = selectedService?.basePrice || 0;
+    // Add property details
+    total += bedroomCharge;
+    total += bathroomCharge;
+    total += halfBathCharge;
+    total += basementCharge;
+    total += sqftAdditionalCost;
+    // Add extras (add-ons)
+    if (selectedAddOns) {
+      for (const [id, qty] of Object.entries(selectedAddOns)) {
+        if (qty > 0) {
+          const addOn = addOns.find(a => a.id === id);
+          if (addOn) {
+            total += addOn.price * qty;
+          }
+        }
+      }
+    }
+    return total;
+  })();
+
+  // Tip is only added to the initial cleaning fee, not to recurring fee
+  const tipAmount = tip || 0;
+  // Initial cleaning fee: subtotal + tip (no discount)
+  const initialFee = preDiscountSubtotal + tipAmount;
+
+  // Recurring cleaning fee: apply discount to subtotal only (no tip)
+  let recurringDiscount = 0;
+  switch (frequency) {
+    case 'weekly':
+      recurringDiscount = 0.20;
+      break;
+    case 'biweekly':
+      recurringDiscount = 0.15;
+      break;
+    case 'monthly':
+      recurringDiscount = 0.10;
+      break;
+    default:
+      recurringDiscount = 0;
+  }
+  // Recurring fee is discounted subtotal, tip is not included
+  const recurringFee = preDiscountSubtotal * (1 - recurringDiscount);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -155,7 +231,7 @@ export function PriceSummary({
     >
       <Card className="bg-white border-gray-200 shadow-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4">
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-2">
           <h2 className="text-white font-bold text-lg tracking-wider text-center">
             BOOKING SUMMARY
           </h2>
@@ -182,11 +258,35 @@ export function PriceSummary({
                   </p>
                 </div>
               </div>
-              {selectedService?.id === 'house-hourly' && (
-                <p className="text-xs text-gray-500 mt-2">
-                  (Minimum 3 hours)
-                </p>
+              {selectedService && selectedService.id === 'house-hourly' && propertyDetails?.hours && propertyDetails?.numCleaners && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span>Hours</span>
+                    <span>{propertyDetails.hours}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Cleaners</span>
+                    <span>{propertyDetails.numCleaners}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <span>Hourly Rate</span>
+                    <span>${selectedService.basePrice} x {propertyDetails.hours} x {propertyDetails.numCleaners}</span>
+                  </div>
+                </>
               )}
+            </div>
+          </div>
+          {/* Service Date/Time Row - same level as other icons */}
+          <div className="flex items-center space-x-4 mb-2">
+            <div className="flex-shrink-0">
+              <Calendar className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="flex-1">
+              <span className="text-base font-semibold text-gray-900">
+                {selectedDate
+                  ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}${selectedTime ? ' at ' + selectedTime : ''}`
+                  : 'Choose service date...'}
+              </span>
             </div>
           </div>
 
@@ -256,26 +356,13 @@ export function PriceSummary({
 
           <Separator />
 
-          {/* Date Selection */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0">
-              <Calendar className="w-6 h-6 text-gray-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900">Choose service date...</h3>
-            </div>
-          </div>
-
-          <Separator />
-
           {/* Frequency */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0">
-              <RotateCcw className="w-6 h-6 text-gray-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900">One Time</h3>
-            </div>
+          <div className="flex items-center text-sm mt-2 w-full">
+            <RotateCcw className="w-5 h-5 text-gray-500 mr-1" />
+            <span className={isRecurring ? 'text-md font-semibold text-green-700 flex-1' : 'text-md font-semibold text-green-700'}>{frequencyLabel}</span>
+            {frequency !== 'one-time' && (
+              <span className="text-md font-bold text-green-700 text-right" style={{minWidth: '38px'}}>{frequencyDiscountPercent[frequency]} Off</span>
+            )}
           </div>
 
           {/* Extras */}
@@ -291,31 +378,34 @@ export function PriceSummary({
             </>
           )}
 
-          {/* Discount */}
-          {frequencyDiscount > 0 && (
-            <>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-green-600">Frequency Discount</span>
-                <span className="font-semibold text-green-600">
-                  -${frequencyDiscount.toFixed(2)}
-                </span>
+          {/* Subtotal and Tip breakdown for recurring */}
+          {isRecurring && tipAmount > 0 && (
+            <div className="flex flex-col text-md text-black-500 mb-1">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>${preDiscountSubtotal.toFixed(2)}</span>
               </div>
-            </>
+              <div className="flex justify-between">
+                <span>Tip</span>
+                <span>+ ${tipAmount.toFixed(2)}</span>
+              </div>
+            </div>
           )}
+          {/* Initial Cleaning Fee row */}
+          <div className="mt-2 w-full flex justify-between items-center">
+            <span className="text-base font-bold text-gray-900">{subtotalLabel}</span>
+            <span className="text-base font-bold text-gray-900 text-right">${isRecurring ? initialFee.toFixed(2) : totalPrice.toFixed(2)}</span>
+          </div>
         </CardContent>
 
         <Separator />
 
-        {/* Total */}
-        <CardFooter className="px-6 py-4 bg-gray-50">
-          <div className="w-full flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Today's Fee
-            </h3>
-            <p className="text-2xl font-bold text-yellow-500">
-              ${totalPrice.toFixed(2)}
-            </p>
+        <CardFooter className="px-6 py-2 bg-gray-50">
+          <div className="bg-gray-50 border-t border-gray-200 px-6 py-2 mt-2 w-full flex justify-between items-center">
+            <span className={isRecurring ? 'text-base font-bold text-yellow-700 -ml-6' : 'text-base font-bold text-yellow-700 -ml-6'}>{grandTotalLabel}</span>
+            <span className={isRecurring ? 'text-base font-bold text-yellow-700 text-right -mr-6' : 'text-base font-bold text-yellow-700 text-right -mr-6'}>
+              {isRecurring ? `$${recurringFee.toFixed(2)}` : `$${finalTotal.toFixed(2)}`}
+            </span>
           </div>
         </CardFooter>
       </Card>

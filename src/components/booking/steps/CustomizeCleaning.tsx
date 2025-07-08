@@ -48,13 +48,13 @@ export const addOns: AddOn[] = [
   // Windows & Blinds
   { id: 'inside-windows-6', label: 'Inside Windows with Tracks (up to 6)', price: 30, quantityType: 'single', group: 'windows', icon: <Image src="/window.svg" alt="Window" width={32} height={32} className="w-8 h-8" /> },
   { id: 'inside-windows-12', label: 'Inside Windows with Tracks (up to 12)', price: 60, quantityType: 'single', group: 'windows', icon: <Image src="/window.svg" alt="Window" width={32} height={32} className="w-8 h-8 opacity-80" /> },
-  { id: 'inside-windows-24', label: 'Inside Windows with Tracks (up to 24)', price: 90, quantityType: 'single', group: 'windows', icon: <Image src="/window.svg" alt="Window" width={32} height={32} className="w-8 h-8 opacity-60" /> },
+  { id: 'inside-windows-24', label: 'Inside Windows with Tracks (up to 24)', price: 80, quantityType: 'single', group: 'windows', icon: <Image src="/window.svg" alt="Window" width={32} height={32} className="w-8 h-8 opacity-60" /> },
   { id: 'blinds', label: 'Blinds (per window)', price: 5, quantityType: 'multi', min: 0, max: 20, group: 'windows', icon: <Blinds className="w-8 h-8 text-blue-400" /> },
 
   // Kitchen
   { id: 'inside-fridge', label: 'Inside Fridge', price: 25, quantityType: 'multi', min: 0, max: 5, group: 'kitchen', icon: <Refrigerator className="w-8 h-8 text-blue-500" /> },
   { id: 'inside-oven', label: 'Inside Oven', price: 25, quantityType: 'multi', min: 0, max: 5, group: 'kitchen', icon: <Microwave className="w-8 h-8 text-orange-500" /> },
-  { id: 'inside-cabinets', label: 'Inside Cabinets', price: 50, quantityType: 'single', group: 'kitchen', icon: <Utensils className="w-8 h-8 text-amber-700" /> },
+  { id: 'inside-cabinets', label: 'Inside Cabinets', price: 30, quantityType: 'single', group: 'kitchen', icon: <Utensils className="w-8 h-8 text-amber-700" /> },
   { id: 'load-dishwasher', label: 'Load Dishwasher', price: 15, quantityType: 'single', group: 'kitchen', icon: <Droplets className="w-8 h-8 text-blue-400" /> },
 
   { id: 'change-bed-sheets', label: 'Change Bed Sheets + Load Laundry', price: 20, quantityType: 'multi', min: 0, max: 10, group: 'laundry', icon: <Sheet className="w-8 h-8 text-pink-400" /> },
@@ -90,7 +90,12 @@ const Counter = ({ value, min = 0, max = 20, onChange }: { value: number, min?: 
   </div>
 );
 
-export const CustomizeCleaning: React.FC<CustomizeCleaningProps> = ({ selectedAddOns, onChangeAddOn }) => {
+export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedService?: string }> = ({ selectedAddOns, onChangeAddOn, selectedService }) => {
+  // Only show certain add-ons for house-hourly
+  let filteredAddOns = addOns;
+  if (selectedService === 'house-hourly') {
+    filteredAddOns = addOns.filter(a => ['home-with-pets', 'load-dishwasher', 'change-bed-sheets'].includes(a.id));
+  }
   return (
     <>
       <div className="mb-6 text-center">
@@ -98,8 +103,8 @@ export const CustomizeCleaning: React.FC<CustomizeCleaningProps> = ({ selectedAd
           For best results, we recommend first-time customers add a Deep Clean to their House Cleaning booking. See our checklist for what's included in each package!
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-        {addOns.map((addOn) => {
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
+        {filteredAddOns.map((addOn) => {
           const quantity = selectedAddOns[addOn.id] || 0;
           return (
             <motion.div
