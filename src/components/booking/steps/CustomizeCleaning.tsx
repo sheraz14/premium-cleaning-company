@@ -63,6 +63,14 @@ export const addOns: AddOn[] = [
   { id: 'home-with-pets', label: 'Home with Pets', price: 30, quantityType: 'single', group: 'pets', note: 'Extra cleaning is required for homes with pets.', icon: <PawPrint className="w-8 h-8 text-amber-700" /> },
 ];
 
+export const officeAddOns: AddOn[] = [
+  { id: 'carpet-cleaning', label: 'Carpet Cleaning', price: 0.35, quantityType: 'single', group: 'office', icon: <Layers className="w-8 h-8 text-blue-500" /> },
+  { id: 'window-washing', label: 'Window Washing', price: 0.75, quantityType: 'single', group: 'office', icon: <Sparkle className="w-8 h-8 text-yellow-500" /> },
+  { id: 'floor-waxing', label: 'Floor Waxing/Buffing', price: 0.40, quantityType: 'single', group: 'office', icon: <Star className="w-8 h-8 text-orange-500" /> },
+  { id: 'restroom-deep-clean', label: 'Restroom Deep Clean', price: 75, quantityType: 'multi', min: 0, max: 10, group: 'office', icon: <Shield className="w-8 h-8 text-green-600" /> },
+  { id: 'eco-friendly', label: 'Eco-Friendly Products', price: 0.05, quantityType: 'single', group: 'office', icon: <Leaf className="w-8 h-8 text-green-400" /> },
+];
+
 interface CustomizeCleaningProps {
   selectedAddOns: { [id: string]: number };
   onChangeAddOn: (id: string, quantity: number) => void;
@@ -91,16 +99,19 @@ const Counter = ({ value, min = 0, max = 20, onChange }: { value: number, min?: 
 );
 
 export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedService?: string }> = ({ selectedAddOns, onChangeAddOn, selectedService }) => {
-  // Only show certain add-ons for house-hourly
   let filteredAddOns = addOns;
-  if (selectedService === 'house-hourly') {
+  if (selectedService === 'office') {
+    filteredAddOns = officeAddOns;
+  } else if (selectedService === 'house-hourly') {
     filteredAddOns = addOns.filter(a => ['home-with-pets', 'load-dishwasher', 'change-bed-sheets'].includes(a.id));
   }
   return (
     <>
       <div className="mb-6 text-center">
         <div className="inline-block bg-purple-50 border border-purple-100 rounded-lg px-4 py-2 text-sm text-purple-800 font-medium shadow-sm">
-          For best results, we recommend first-time customers add a Deep Clean to their House Cleaning booking. See our checklist for what's included in each package!
+          {selectedService === 'office'
+            ? 'Select any special requirements for your office or business cleaning. Pricing is per sq ft or per restroom.'
+            : 'For best results, we recommend first-time customers add a Deep Clean to their House Cleaning booking. See our checklist for what\'s included in each package!'}
         </div>
       </div>
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
@@ -117,7 +128,9 @@ export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedServ
               </div>
               <div className="flex-1 flex flex-col justify-center w-full min-h-[48px]">
                 <div className="text-center font-semibold text-gray-900 text-sm mb-1 mt-1 leading-tight break-words">{addOn.label}</div>
-                <div className="text-center text-xs text-gray-500 mb-2">${addOn.price}</div>
+                <div className="text-center text-xs text-gray-500 mb-2">
+                  {addOn.quantityType === 'multi' ? `$${addOn.price} each` : `$${addOn.price}${addOn.id === 'eco-friendly' ? ' per sq ft' : addOn.id === 'restroom-deep-clean' ? ' per restroom' : ' per sq ft'}`}
+                </div>
               </div>
               {addOn.quantityType === 'multi' ? (
                 <div className="flex items-center gap-2 mt-1 mb-1">
@@ -147,9 +160,6 @@ export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedServ
                 >
                   {quantity > 0 ? 'Selected' : 'Add'}
                 </button>
-              )}
-              {addOn.note && (
-                <div className="mt-1 text-xs text-amber-700 text-center">{addOn.note}</div>
               )}
             </motion.div>
           );

@@ -27,13 +27,20 @@ interface PriceSummaryProps {
   frequencyDiscount: number;
   totalPrice: number;
   propertyDetails?: {
-    sqft: string;
-    bedrooms: string;
-    bathrooms: string;
-    halfBaths: string;
-    basement: string;
-    hours: number;
-    numCleaners: number;
+    // House fields
+    sqft?: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    halfBaths?: string;
+    basement?: string;
+    hours?: number;
+    numCleaners?: number;
+    // Office fields
+    officeSize?: string;
+    numWashrooms?: number;
+    hasKitchen?: boolean;
+    kitchenType?: string;
+    flooringTypes?: string[];
   };
   selectedAddOns?: { [id: string]: number };
   tip?: number;
@@ -69,7 +76,7 @@ export function PriceSummary({
   
   // Calculate individual charges
   const bedroomCharge = bedrooms * 40;
-  const bathroomCharge = bathrooms * 30;
+  const bathroomCharge = bathrooms * 25;
   const halfBathCharge = halfBaths * 15;
   
   // Calculate basement charge
@@ -110,9 +117,6 @@ export function PriceSummary({
   if (selectedService?.id === 'house-package' && propertyDetails?.sqft) {
     const sqftRange = propertyDetails.sqft;
     switch (sqftRange) {
-      case "500-999":
-        sqftAdditionalCost = 0; // Base price covers this range
-        break;
       case "1000-1499":
         sqftAdditionalCost = 20;
         break;
@@ -120,28 +124,28 @@ export function PriceSummary({
         sqftAdditionalCost = 40;
         break;
       case "2000-2999":
-        sqftAdditionalCost = 70;
+        sqftAdditionalCost = 60;
         break;
       case "3000-3999":
-        sqftAdditionalCost = 110;
+        sqftAdditionalCost = 80;
         break;
       case "4000-4999":
-        sqftAdditionalCost = 150;
+        sqftAdditionalCost = 100;
         break;
       case "5000-5999":
-        sqftAdditionalCost = 200;
+        sqftAdditionalCost = 120;
         break;
       case "6000-6999":
-        sqftAdditionalCost = 280;
+        sqftAdditionalCost = 140;
         break;
       case "7000-7999":
-        sqftAdditionalCost = 380;
+        sqftAdditionalCost = 160;
         break;
       case "8000-8999":
-        sqftAdditionalCost = 480;
+        sqftAdditionalCost = 180;
         break;
       case "9000-9999":
-        sqftAdditionalCost = 580;
+        sqftAdditionalCost = 200;
         break;
       default:
         sqftAdditionalCost = 0;
@@ -157,28 +161,23 @@ export function PriceSummary({
     })
     .filter(Boolean) as AddOnSummary[];
 
-  // Calculate final total including tip
-  const finalTotal = totalPrice + (tip || 0);
-
-  // Frequency label helper
-  const frequencyLabel = {
-    'one-time': 'One Time',
-    'weekly': 'Weekly',
-    'biweekly': 'Biweekly',
-    'monthly': 'Monthly',
-  }[frequency] || 'One Time';
-  const frequencyDiscountPercent = {
-    'weekly': '20%',
-    'biweekly': '15%',
-    'monthly': '10%',
-  };
-
-  const isRecurring = frequency !== 'one-time';
-  const subtotalLabel = isRecurring ? 'Initial Cleaning Fee' : 'Subtotal';
-  const grandTotalLabel = isRecurring ? 'Recurring Cleaning Fee' : 'Grand Total';
-
   // Calculate pre-discount subtotal (before tip)
   const preDiscountSubtotal = (() => {
+    if (selectedService?.id === 'house-hourly' && propertyDetails?.hours && propertyDetails?.numCleaners) {
+      let total = selectedService.basePrice * propertyDetails.hours * propertyDetails.numCleaners;
+      // Add extras (add-ons)
+      if (selectedAddOns) {
+        for (const [id, qty] of Object.entries(selectedAddOns)) {
+          if (qty > 0) {
+            const addOn = addOns.find(a => a.id === id);
+            if (addOn) {
+              total += addOn.price * qty;
+            }
+          }
+        }
+      }
+      return total;
+    }
     let total = selectedService?.basePrice || 0;
     // Add property details
     total += bedroomCharge;
@@ -214,6 +213,9 @@ export function PriceSummary({
     case 'biweekly':
       recurringDiscount = 0.15;
       break;
+    case 'triweekly':
+      recurringDiscount = 0.125;
+      break;
     case 'monthly':
       recurringDiscount = 0.10;
       break;
@@ -222,6 +224,28 @@ export function PriceSummary({
   }
   // Recurring fee is discounted subtotal, tip is not included
   const recurringFee = preDiscountSubtotal * (1 - recurringDiscount);
+
+  // Calculate final total including tip
+  const finalTotal = totalPrice + (tip || 0);
+
+  // Frequency label helper
+  const frequencyLabel = {
+    'one-time': 'One Time',
+    'weekly': 'Weekly',
+    'biweekly': 'Biweekly',
+    'triweekly': 'Tri-weekly',
+    'monthly': 'Monthly',
+  }[frequency] || 'One Time';
+  const frequencyDiscountPercent = {
+    'weekly': '20%',
+    'biweekly': '15%',
+    'triweekly': '12.5%',
+    'monthly': '10%',
+  };
+
+  const isRecurring = frequency !== 'one-time';
+  const subtotalLabel = isRecurring ? 'Initial Cleaning Fee' : 'Subtotal';
+  const grandTotalLabel = isRecurring ? 'Recurring Cleaning Fee' : 'Grand Total';
 
   return (
     <motion.div
@@ -290,46 +314,83 @@ export function PriceSummary({
             </div>
           </div>
 
-          {/* Square Footage Cost */}
-          {propertyDetails?.sqft && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">• Square Footage ({propertyDetails.sqft.replace('-', ' - ')} sqft)</span>
-              <span className="font-medium text-gray-900">
-                {sqftAdditionalCost > 0 ? `+$${sqftAdditionalCost.toFixed(2)}` : 'Included'}
-              </span>
+          {/* Office/Business Cleaning Details */}
+          {selectedService?.id === 'office' && propertyDetails && (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">• Office Size</span>
+                <span className="font-medium text-gray-900">
+                  {(() => {
+                    switch (propertyDetails.officeSize) {
+                      case 'under-1000': return 'Under 1,000 sq ft';
+                      case '1001-2500': return '1,001 – 2,500 sq ft';
+                      case '2501-5000': return '2,501 – 5,000 sq ft';
+                      case 'over-5000': return 'Over 5,000 sq ft (Custom Quote)';
+                      default: return '-';
+                    }
+                  })()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">• Washrooms</span>
+                <span className="font-medium text-gray-900">{typeof propertyDetails.numWashrooms === 'number' ? propertyDetails.numWashrooms : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">• Kitchen/Break Area</span>
+                <span className="font-medium text-gray-900">
+                  {propertyDetails.hasKitchen ? (
+                    propertyDetails.kitchenType === 'small' ? 'Yes (Small sink/fridge)' : propertyDetails.kitchenType === 'full' ? 'Yes (Full kitchen)' : 'Yes'
+                  ) : 'No'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">• Flooring Types</span>
+                <span className="font-medium text-gray-900">{propertyDetails.flooringTypes && propertyDetails.flooringTypes.length > 0 ? propertyDetails.flooringTypes.join(', ') : '-'}</span>
+              </div>
             </div>
           )}
 
-          {/* Bedroom Charges */}
-          {bedroomCharge > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">• {bedrooms} Bedroom{bedrooms > 1 ? 's' : ''} (${40} each)</span>
-              <span className="font-medium text-gray-900">+${bedroomCharge.toFixed(2)}</span>
-            </div>
-          )}
-
-          {/* Bathroom Charges */}
-          {bathroomCharge > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">• {bathrooms} Bathroom{bathrooms > 1 ? 's' : ''} (${30} each)</span>
-              <span className="font-medium text-gray-900">+${bathroomCharge.toFixed(2)}</span>
-            </div>
-          )}
-
-          {/* Half Bath Charges */}
-          {halfBathCharge > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">• {halfBaths} Half Bath{halfBaths > 1 ? 's' : ''} (${15} each)</span>
-              <span className="font-medium text-gray-900">+${halfBathCharge.toFixed(2)}</span>
-            </div>
-          )}
-
-          {/* Basement Charges */}
-          {basementCharge > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">• {basementLabel}</span>
-              <span className="font-medium text-gray-900">+${basementCharge.toFixed(2)}</span>
-            </div>
+          {/* House Cleaning Details (hide for office) */}
+          {selectedService?.id !== 'office' && (
+            <>
+              {/* Square Footage Cost */}
+              {propertyDetails?.sqft && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">• Square Footage ({propertyDetails.sqft.replace('-', ' - ')} sqft)</span>
+                  <span className="font-medium text-gray-900">
+                    {sqftAdditionalCost > 0 ? `+$${sqftAdditionalCost.toFixed(2)}` : 'Included'}
+                  </span>
+                </div>
+              )}
+              {/* Bedroom Charges */}
+              {bedroomCharge > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">• {bedrooms} Bedroom{bedrooms > 1 ? 's' : ''} (${40} each)</span>
+                  <span className="font-medium text-gray-900">+${bedroomCharge.toFixed(2)}</span>
+                </div>
+              )}
+              {/* Bathroom Charges */}
+              {bathroomCharge > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">• {bathrooms} Bathroom{bathrooms > 1 ? 's' : ''} (${25} each)</span>
+                  <span className="font-medium text-gray-900">+${bathroomCharge.toFixed(2)}</span>
+                </div>
+              )}
+              {/* Half Bath Charges */}
+              {halfBathCharge > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">• {halfBaths} Half Bath{halfBaths > 1 ? 's' : ''} (${15} each)</span>
+                  <span className="font-medium text-gray-900">+${halfBathCharge.toFixed(2)}</span>
+                </div>
+              )}
+              {/* Basement Charges */}
+              {basementCharge > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">• {basementLabel}</span>
+                  <span className="font-medium text-gray-900">+${basementCharge.toFixed(2)}</span>
+                </div>
+              )}
+            </>
           )}
 
           {/* Customizations / Add-ons */}
@@ -394,7 +455,7 @@ export function PriceSummary({
           {/* Initial Cleaning Fee row */}
           <div className="mt-2 w-full flex justify-between items-center">
             <span className="text-base font-bold text-gray-900">{subtotalLabel}</span>
-            <span className="text-base font-bold text-gray-900 text-right">${isRecurring ? initialFee.toFixed(2) : totalPrice.toFixed(2)}</span>
+            <span className="text-base font-bold text-gray-900 text-right">${initialFee.toFixed(2)}</span>
           </div>
         </CardContent>
 

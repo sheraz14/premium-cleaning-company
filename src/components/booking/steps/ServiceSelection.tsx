@@ -109,12 +109,17 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({
 
                   {/* Pricing */}
                   <div className="mb-4">
-                    <span className="text-2xl font-bold text-purple-600">
-                      ${service.basePrice}
-                    </span>
-                    <span className="text-gray-500 ml-1">
-                      {service.id === 'house-hourly' ? '/hour' : ' starting'}
-                    </span>
+                    {service.id === 'office' ? (
+                      <>
+                        <span className="text-2xl font-bold text-purple-600">from $0.15</span>
+                        <span className="text-gray-500 ml-1">/sqft</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl font-bold text-purple-600">${service.basePrice}</span>
+                        <span className="text-gray-500 ml-1">{service.id === 'house-hourly' ? '/hour' : ' starting'}</span>
+                      </>
+                    )}
                   </div>
 
                   {/* Duration */}
