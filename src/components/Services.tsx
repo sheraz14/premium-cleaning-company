@@ -150,15 +150,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
         delay: index * 0.1
       });
 
-      // Continuous subtle floating animation
-      gsap.to(card, {
-        y: "random(-8, 8)",
-        duration: "random(4, 6)",
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        delay: "random(0, 2)"
-      });
+      // Removed continuous floating animation to prevent card collisions
 
     }, card);
 
@@ -283,15 +275,14 @@ export function Services() {
     const ctx = gsap.context(() => {
       // Set initial states
       gsap.set(".gsap-services-badge", { opacity: 0, y: 50, scale: 0.8 });
-      gsap.set(".gsap-services-heading", { opacity: 0, y: 50 });
-      gsap.set(".gsap-services-description", { opacity: 0, y: 30 });
 
       // Create timeline for header animations
       const headerTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top 80%",
-          toggleActions: "play none none reverse"
+          toggleActions: "play none none none",
+          once: true
         }
       });
 
@@ -304,36 +295,23 @@ export function Services() {
         ease: "back.out(1.4)"
       });
 
-      // Heading with SplitText
-      if (headingRef.current) {
-        const headingSplit = new SplitText(headingRef.current, { type: "words,chars" });
-        
-        gsap.set(headingSplit.chars, {
-          opacity: 0,
-          y: 100,
-          rotationX: -90
-        });
+      // Ensure heading container becomes visible and stays visible
+      headerTimeline.to(".gsap-services-heading", {
+        opacity: 1,
+        y: 0,
+        duration: 0.01,
+        ease: "none"
+      });
 
-        headerTimeline.to(headingSplit.chars, {
-          opacity: 1,
-          y: 0,
-          rotationX: 0,
-          duration: 1.2,
-          ease: "back.out(1.7)",
-          stagger: {
-            amount: 0.8,
-            from: "start"
-          }
-        }, "-=0.3");
-      }
+      // Removed SplitText animation to avoid visibility issues
 
-      // Description animation
+      // Ensure description is visible and stable
       headerTimeline.to(".gsap-services-description", {
         opacity: 1,
         y: 0,
-        duration: 0.8,
-        ease: "power2.out"
-      }, "-=0.6");
+        duration: 0.4,
+        ease: "none"
+      }, "-=0.2");
 
       // Sparkle icon continuous animation
       gsap.to(".sparkle-icon", {
@@ -364,7 +342,7 @@ export function Services() {
             </span>
           </div>
 
-          <h2 ref={headingRef} className="gsap-how-heading text-3xl md:text-5xl font-bold mb-4 text-purple-700 mt-4 mb-8">
+          <h2 ref={headingRef} className="gsap-services-heading text-3xl md:text-5xl font-bold mb-4 text-purple-700 mt-4 mb-8">
           <span className="bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundImage: 'linear-gradient(to right, #7c3aed, #db2777)' }}>
             Professional Cleaning Solutions
             </span>

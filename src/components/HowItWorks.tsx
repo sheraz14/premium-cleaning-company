@@ -51,13 +51,13 @@ export function HowItWorks() {
         const heading = document.querySelector(".gsap-how-heading");
         const description = document.querySelector(".gsap-how-description");
         
-        // Only animate elements that exist and keep headings visible
+        // Only animate elements that exist and keep headings visible, with reduced motion
         if (badge) {
-          gsap.set(badge, { opacity: 0, y: isMobile ? 30 : 50, scale: 0.8 });
+          gsap.set(badge, { opacity: 0, y: isMobile ? 15 : 20, scale: 0.95 });
         }
-        
+
         if (description) {
-          gsap.set(description, { opacity: 0, y: isMobile ? 20 : 30 });
+          gsap.set(description, { opacity: 0, y: isMobile ? 10 : 15 });
         }
         
         // Step cards
@@ -65,9 +65,9 @@ export function HowItWorks() {
         if (stepCards.length > 0) {
           gsap.set(stepCards, { 
             opacity: 0, 
-            y: isMobile ? 50 : 100, 
-            scale: 0.8, 
-            rotationY: isMobile ? 0 : -15 
+            y: isMobile ? 20 : 25, 
+            scale: 0.97, 
+            rotationY: 0
           });
         }
         
@@ -88,7 +88,8 @@ export function HowItWorks() {
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 80%",
-            toggleActions: "play none none reverse"
+            toggleActions: "play none none none",
+            once: true
           }
         });
 
@@ -98,18 +99,19 @@ export function HowItWorks() {
             opacity: 1,
             y: 0,
             scale: 1,
-            duration: isMobile ? 0.5 : 0.6,
-            ease: "back.out(1.4)"
+            duration: 0.35,
+            ease: "power2.out"
           });
         }
 
         // Heading animation - subtle effect since it's always visible
         if (heading) {
           headerTimeline.to(heading, {
-            scale: 1.02,
-            duration: 0.6,
+            opacity: 1,
+            y: 0,
+            duration: 0.35,
             ease: "power2.out"
-          }, "-=0.3");
+          }, "-=0.2");
         }
 
         // Description animation
@@ -117,21 +119,22 @@ export function HowItWorks() {
           headerTimeline.to(description, {
             opacity: 1,
             y: 0,
-            duration: isMobile ? 0.6 : 0.8,
+            duration: 0.35,
             ease: "power2.out"
-          }, "-=0.4");
+          }, "-=0.2");
         }
 
         // Connector line animation - disabled on mobile
         if (!isMobile && connectorLine) {
           gsap.to(connectorLine, {
             scaleX: 1,
-            duration: 2,
-            ease: "power2.inOut",
+            duration: 0.6,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: connectorLine,
               start: "top 70%",
-              toggleActions: "play none none reverse"
+              toggleActions: "play none none none",
+              once: true
             }
           });
         }
@@ -143,16 +146,14 @@ export function HowItWorks() {
             y: 0,
             scale: 1,
             rotationY: 0,
-            duration: isMobile ? 0.6 : 0.8,
-            ease: "power3.out",
-            stagger: {
-              amount: isMobile ? 0.8 : 1.2,
-              from: "start"
-            },
+            duration: 0.45,
+            ease: "power2.out",
+            stagger: 0.12,
             scrollTrigger: {
               trigger: ".gsap-steps-container",
-              start: "top 70%",
-              toggleActions: "play none none reverse"
+              start: "top 75%",
+              toggleActions: "play none none none",
+              once: true
             }
           });
         }
@@ -161,17 +162,18 @@ export function HowItWorks() {
         const stepNumbers = document.querySelectorAll(".gsap-step-number");
         if (stepNumbers.length > 0) {
           gsap.to(stepNumbers, {
-            scale: 1.1,
-            rotation: isMobile ? 0 : 360,
-            duration: isMobile ? 0.5 : 0.8,
-            ease: "back.out(1.7)",
-            stagger: 0.2,
+            scale: 1.05,
+            rotation: 0,
+            duration: 0.35,
+            ease: "power2.out",
+            stagger: 0.1,
             scrollTrigger: {
               trigger: ".gsap-steps-container",
-              start: "top 70%",
-              toggleActions: "play none none reverse"
+              start: "top 75%",
+              toggleActions: "play none none none",
+              once: true
             },
-            delay: 0.5
+            delay: 0.25
           });
         }
 
@@ -180,44 +182,33 @@ export function HowItWorks() {
           gsap.to(stepIcons, {
             scale: 1,
             rotation: 0,
-            duration: isMobile ? 0.4 : 0.6,
-            ease: "back.out(1.7)",
-            stagger: 0.15,
+            duration: 0.3,
+            ease: "power2.out",
+            stagger: 0.08,
             scrollTrigger: {
               trigger: ".gsap-steps-container",
-              start: "top 70%",
-              toggleActions: "play none none reverse"
+              start: "top 75%",
+              toggleActions: "play none none none",
+              once: true
             },
-            delay: 0.8
+            delay: 0.35
           });
         }
 
-        // Floating animation for desktop
-        if (!isMobile && stepCards.length > 0) {
-          gsap.to(stepCards, {
-            y: "random(-5, 5)",
-            duration: "random(3, 5)",
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
-            stagger: {
-              amount: 2,
-              from: "random"
-            }
-          });
-        }
+        // Removed continuous floating animation to prevent collisions
 
         // CTA section animation
         if (ctaSection) {
           gsap.to(ctaSection, {
             opacity: 1,
             y: 0,
-            duration: isMobile ? 0.8 : 1,
-            ease: "power3.out",
+            duration: 0.4,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: ctaSection,
-              start: "top 80%",
-              toggleActions: "play none none reverse"
+              start: "top 85%",
+              toggleActions: "play none none none",
+              once: true
             }
           });
         }
@@ -239,9 +230,9 @@ export function HowItWorks() {
           buttons.forEach((button) => {
             button.addEventListener('mouseenter', () => {
               gsap.to(button, {
-                scale: 1.05,
-                y: -5,
-                duration: 0.3,
+                scale: 1.03,
+                y: -3,
+                duration: 0.2,
                 ease: "power2.out"
               });
             });
@@ -250,7 +241,7 @@ export function HowItWorks() {
               gsap.to(button, {
                 scale: 1,
                 y: 0,
-                duration: 0.3,
+                duration: 0.2,
                 ease: "power2.out"
               });
             });
@@ -405,12 +396,12 @@ export function HowItWorks() {
 
         <div className="relative gsap-steps-container">
           {/* Desktop connector line with animated gradient - hidden on mobile */}
-          <div ref={connectorRef} className="gsap-connector-line hidden lg:block absolute top-36 left-0 right-0 h-1 z-0">
+          <div ref={connectorRef} className="gsap-connector-line hidden lg:block absolute top-40 left-0 right-0 h-1 z-0">
             <div className="h-full bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-pulse"></div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative z-10 mt-4 sm:mt-6">
             {/* Step 1 */}
             <div 
               className="gsap-step-card gsap-step-card-0 bg-white p-6 sm:p-8 rounded-xl shadow-md border border-slate-100 text-center cursor-pointer"
@@ -526,36 +517,35 @@ export function HowItWorks() {
         </div>
 
         {/* CTA Box with gradient border */}
-        <div ref={ctaRef} className="gsap-cta-section max-w-3xl mx-auto mt-20 relative">
-          {/* Enhanced CTA Banner */}
-          <div className="relative rounded-3xl overflow-hidden shadow-[0_10px_50px_-12px] shadow-purple-500/30 border-0 transition-all duration-300 hover:shadow-[0_10px_50px_-6px] hover:shadow-purple-500/50">
-            {/* Animated Gradient Border */}
-            <div className="absolute inset-0 p-[3px] rounded-3xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 opacity-90 animate-gradient-x" style={{ zIndex: 1 }} />
-            
-            {/* Background with enhanced gradient */}
-            <div className="absolute inset-0 rounded-3xl z-[1] bg-gradient-to-br from-purple-100 via-white to-pink-100" />
-            
-            {/* Animated glowing orbs */}
-            <div className="absolute -top-20 -left-20 w-96 h-96 bg-purple-400/30 rounded-full filter blur-[64px] animate-pulse" />
-            <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-pink-400/30 rounded-full filter blur-[64px] animate-pulse" />
-            
-            {/* Content container with enhanced glass effect */}
-            <div className="relative z-10 bg-white/70 backdrop-blur-xl rounded-3xl p-12 sm:p-16 flex flex-col items-center">
-              <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-700 via-pink-600 to-purple-600 inline-block text-transparent bg-clip-text">
+        <div ref={ctaRef} className="gsap-cta-section max-w-4xl mx-auto mt-16 sm:mt-20 relative">
+          {/* Professional CTA Banner - toned down colors */}
+          <div className="relative rounded-3xl overflow-hidden shadow-[0_10px_40px_-12px] shadow-slate-400/20 border border-slate-200/60 transition-all duration-300 hover:shadow-[0_10px_40px_-8px] hover:shadow-slate-400/30 bg-white">
+            {/* Subtle top border accent */}
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-400 via-emerald-400 to-indigo-400 opacity-70" />
+
+            {/* Minimal background tint */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -top-10 -left-10 w-72 h-72 bg-indigo-100/40 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -right-10 w-72 h-72 bg-emerald-100/40 rounded-full blur-3xl" />
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 rounded-3xl p-8 sm:p-12 flex flex-col items-center">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-slate-800">
                 Ready to Get Started?
               </h3>
-              <p className="text-lg text-gray-700 mb-8 text-center max-w-xl leading-relaxed">
-                Experience the Dust Drifters difference! Book your cleaning service today and enjoy a spotless space without the hassle.
+              <p className="text-base sm:text-lg text-slate-600 mb-6 text-center max-w-2xl leading-relaxed">
+                Book your professional cleaning today and enjoy a spotless space. Fast scheduling, reliable service, and satisfaction guaranteed.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xl">
                 <MagnetizeButton
-                  className="gsap-cta-button flex-1 shadow-xl hover:shadow-purple-500/40 transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="gsap-cta-button flex-1 shadow-sm hover:shadow-md transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 text-white"
                   onClick={() => window.location.href = '/booking'}
                 >
-                  Book your Cleaning Online
+                  Book Online
                 </MagnetizeButton>
                 <a href="tel:+1234567890" className="flex-1">
-                  <MagnetizeButton className="gsap-cta-button w-full shadow-xl hover:shadow-pink-500/40 transition-all duration-300 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700">
+                  <MagnetizeButton className="gsap-cta-button w-full shadow-sm hover:shadow-md transition-all duration-200 bg-emerald-600 hover:bg-emerald-700 text-white">
                     Call us: (123) 456-7890
                   </MagnetizeButton>
                 </a>

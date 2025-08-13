@@ -48,10 +48,7 @@ export default function Home() {
         data-parallax="0.2"
         data-tilt="8"
       >
-        <div 
-          data-reveal="left"
-          data-duration="1.5"
-        >
+        <div>
           <Services />
         </div>
       </section>

@@ -131,7 +131,7 @@ const Navbar = () => {
                                 {link.icon}
                               </div>
                               <div className="ml-3 flex-1">
-                                <span className="block text-slate-700 font-medium group-hover:text-blue-700 transition-colors duration-200">
+                                <span className="block text-black font-medium transition-colors duration-200">
                                   {link.label}
                                 </span>
                               </div>
@@ -310,9 +310,9 @@ const Navbar = () => {
                      
                      {serviceLinks.map((link, index) => (
                        <div key={link.href} className={`transform transition-all duration-300 ease-out ${isServicesOpen ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`} style={{ transitionDelay: `${index * 50}ms` }}>
-                         <Link 
+                          <Link 
                            href={link.href} 
-                           className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 transform hover:translate-x-1"
+                           className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-black hover:bg-blue-50 transition-all duration-200 transform hover:translate-x-1"
                            onClick={() => {
                              setIsMenuOpen(false);
                              setIsServicesOpen(false);
