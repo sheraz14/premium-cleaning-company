@@ -55,7 +55,7 @@ export function HowItWorks() {
         if (badge) {
           gsap.set(badge, { opacity: 0, y: isMobile ? 15 : 20, scale: 0.95 });
         }
-
+        
         if (description) {
           gsap.set(description, { opacity: 0, y: isMobile ? 10 : 15 });
         }

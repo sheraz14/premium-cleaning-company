@@ -99,12 +99,23 @@ const Counter = ({ value, min = 0, max = 20, onChange }: { value: number, min?: 
 );
 
 export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedService?: string }> = ({ selectedAddOns, onChangeAddOn, selectedService }) => {
+  // For house-hourly service, don't show any add-ons since it's billed by time
+  if (selectedService === 'house-hourly') {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-6 py-4 text-blue-800 font-medium shadow-sm">
+          <p className="text-lg font-semibold mb-2">Hourly Cleaning Service</p>
+          <p className="text-sm">Book from 3 hours or more. Tell us your priorities, and we’ll focus on those areas within your booked time. This option is perfect for targeting specific rooms or tasks, but it may not cover your entire home in one visit.</p>
+        </div>
+      </div>
+    );
+  }
+
   let filteredAddOns = addOns;
   if (selectedService === 'office') {
     filteredAddOns = officeAddOns;
-  } else if (selectedService === 'house-hourly') {
-    filteredAddOns = addOns.filter(a => ['home-with-pets', 'load-dishwasher', 'change-bed-sheets'].includes(a.id));
   }
+  
   return (
     <>
       <div className="mb-6 text-center">
@@ -129,7 +140,15 @@ export const CustomizeCleaning: React.FC<CustomizeCleaningProps & { selectedServ
               <div className="flex-1 flex flex-col justify-center w-full min-h-[48px]">
                 <div className="text-center font-semibold text-gray-900 text-sm mb-1 mt-1 leading-tight break-words">{addOn.label}</div>
                 <div className="text-center text-xs text-gray-500 mb-2">
-                  {addOn.quantityType === 'multi' ? `$${addOn.price} each` : `$${addOn.price}${addOn.id === 'eco-friendly' ? ' per sq ft' : addOn.id === 'restroom-deep-clean' ? ' per restroom' : ' per sq ft'}`}
+                  {selectedService === 'office'
+                    ? // Office add-ons retain unit context where relevant
+                      (addOn.id === 'restroom-deep-clean'
+                        ? `$${addOn.price} per restroom`
+                        : `$${addOn.price} per sq ft`)
+                    : // Residential: no "per sq ft" suffix; show price (or each for multiples)
+                      (addOn.quantityType === 'multi'
+                        ? `$${addOn.price} each`
+                        : `$${addOn.price}`)}
                 </div>
               </div>
               {addOn.quantityType === 'multi' ? (

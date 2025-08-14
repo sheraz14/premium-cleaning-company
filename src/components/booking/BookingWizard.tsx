@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, MessageSquare, Trash2, Heart, AlertTriangle, X, Calendar, Home, Building, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StepIndicator } from './StepIndicator';
 import { ServiceSelection } from './steps/ServiceSelection';
@@ -106,7 +106,7 @@ const services = [
     id: 'house-package',
     name: 'House Cleaning Package',
     basePrice: 80,
-    description: 'Complete house cleaning with all essential areas covered',
+    description: 'A top-to-bottom cleaning for your home following our comprehensive checklist. Enter total number of bedrooms, bathrooms, and the total square footage of the home.',
     features: [
       'All rooms cleaned thoroughly',
       'Kitchen deep clean',
@@ -123,7 +123,7 @@ const services = [
     id: 'house-hourly',
     name: 'House Cleaning by the Hour',
     basePrice: 45,
-    description: 'Flexible hourly cleaning service for specific needs',
+    description: 'A time-limited cleaning best for cleaning specific areas of the home. (Note: the hourly clean will not guarantee full coverage of your home).',
     features: [
       'Minimum 3 hours',
       'Focus on priority areas',
@@ -217,7 +217,13 @@ export const BookingWizard: React.FC = () => {
 
   // Update functions
   const updateService = useCallback((serviceId: string) => {
-    setBookingState(prev => ({ ...prev, selectedService: serviceId }));
+    // Reset all form data when service changes
+    setBookingState(prev => ({
+      ...initialState,
+      selectedService: serviceId,
+      // Keep customer info if it exists
+      customerInfo: prev.customerInfo
+    }));
     if (serviceId === 'office') {
       setCurrentStep(2);
     }
@@ -397,7 +403,8 @@ export const BookingWizard: React.FC = () => {
     }
     // Add room charges
     total += bookingState.bedrooms * 40;
-    total += bookingState.bathrooms * 30;
+    // Align bathroom pricing with summary: $25 per bathroom
+    total += bookingState.bathrooms * 25;
     total += bookingState.halfBaths * 15;
     // Add basement charges
     switch (bookingState.basement) {
@@ -535,7 +542,8 @@ export const BookingWizard: React.FC = () => {
     }
     // Add room charges
     total += bookingState.bedrooms * 40;
-    total += bookingState.bathrooms * 30;
+    // Align bathroom pricing with summary: $25 per bathroom
+    total += bookingState.bathrooms * 25;
     total += bookingState.halfBaths * 15;
     // Add basement charges
     switch (bookingState.basement) {
@@ -881,38 +889,69 @@ export const BookingWizard: React.FC = () => {
     if (currentStep === 4) {
       return (
         <motion.div {...commonProps} key="customize">
-          {/* Frequency selection UI moved to the top for all services */}
-          <div className="mb-4">
-            <h3 className="font-semibold text-lg mb-2">How often?</h3>
-            <div className="flex flex-wrap gap-2">
+          {/* Frequency selection UI - improved for house-hourly */}
+          <div className="mb-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {bookingState.selectedService === 'house-hourly' ? 'How often do you need hourly cleaning?' : 'How often would you like cleaning?'}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {bookingState.selectedService === 'house-hourly' 
+                  ? 'Choose your preferred frequency for hourly cleaning services'
+                  : 'Choose your preferred frequency and save with recurring service discounts'
+                }
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 max-w-4xl mx-auto justify-center">
               {(() => {
                 if (bookingState.selectedService === 'house-package' || bookingState.selectedService === 'house-hourly') {
                   return [
-                    { value: 'one-time', label: 'One Time' },
-                    { value: 'weekly', label: 'Weekly - 20% off' },
-                    { value: 'biweekly', label: 'Bi-weekly - 15% off' },
-                    { value: 'triweekly', label: 'Tri-weekly - 12.5% off' },
-                    { value: 'monthly', label: 'Monthly - 10% off' },
+                    { value: 'one-time', label: 'One Time', discount: '', popular: false },
+                    { value: 'weekly', label: 'Weekly', discount: '20% off', popular: true },
+                    { value: 'biweekly', label: 'Bi-weekly', discount: '15% off', popular: false },
+                    { value: 'triweekly', label: 'Tri-weekly', discount: '12.5% off', popular: false },
+                    { value: 'monthly', label: 'Monthly', discount: '10% off', popular: false },
                   ];
                 } else {
                   return [
-                    { value: 'one-time', label: 'One Time' },
-                    { value: 'Daily', label: 'Daily - 20% off' },
-                    { value: '3x/week', label: '3x/week - 15% off' },
-                    { value: 'Weekly', label: 'Weekly - 10% off' },
-                    { value: 'Biweekly', label: 'Biweekly' },
-                    { value: 'Monthly', label: 'Monthly' },
+                    { value: 'one-time', label: 'One Time', discount: '', popular: false },
+                    { value: 'Daily', label: 'Daily', discount: '20% off', popular: true },
+                    { value: '3x/week', label: '3x/week', discount: '15% off', popular: false },
+                    { value: 'Weekly', label: 'Weekly', discount: '10% off', popular: false },
+                    { value: 'Biweekly', label: 'Biweekly', discount: '', popular: false },
+                    { value: 'Monthly', label: 'Monthly', discount: '', popular: false },
                   ];
                 }
               })().map(option => (
-                <button
+                <motion.button
                   key={option.value}
                   type="button"
-                  className={`px-4 py-2 rounded border font-medium transition-all duration-150 ${bookingState.frequency === option.value ? 'bg-yellow-400 text-white border-yellow-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-yellow-50'}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative px-4 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
+                    bookingState.frequency === option.value 
+                      ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
+                      : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50'
+                  }`}
                   onClick={() => setBookingState(prev => ({ ...prev, frequency: option.value }))}
                 >
-                  {option.label}
-                </button>
+                  {option.popular && (
+                    <div className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-1.5 py-0.5 rounded-full text-xs font-semibold">
+                      Popular
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-900">{option.label}</span>
+                    {option.discount && (
+                      <span className="text-xs font-medium text-green-600">{option.discount}</span>
+                    )}
+                    {bookingState.frequency === option.value && (
+                      <div className="w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                      </div>
+                    )}
+                  </div>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -952,155 +991,246 @@ export const BookingWizard: React.FC = () => {
     if (currentStep === 6) {
       return (
         <motion.div {...commonProps} key="review">
-          <div className="max-w-4xl mx-auto p-6 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Review Your Booking
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Please review your details before confirming
-            </p>
+          <div className="max-w-4xl mx-auto p-6">
             
             {/* Booking Summary */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-              <h3 className="font-semibold text-lg mb-4">Booking Summary</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Service:</span>
-                  <span className="font-medium">{currentService?.name}</span>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <Calendar className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex justify-between">
-                  <span>Date:</span>
-                  <span className="font-medium">
-                    {bookingState.selectedDate?.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Time:</span>
-                  <span className="font-medium">{bookingState.selectedTime}</span>
-                </div>
-                {/* Show house property details only for house services */}
-                {currentService?.id !== 'office' && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Property Size:</span>
-                      <span className="font-medium">{bookingState.squareFootage} sq ft</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Rooms:</span>
-                      <span className="font-medium">
-                        {bookingState.bedrooms} BR, {bookingState.bathrooms} Bath
-                        {bookingState.halfBaths > 0 && `, ${bookingState.halfBaths} Half Bath`}
-                      </span>
-                    </div>
-                  </>
-                )}
-                {currentService?.id === 'house-hourly' && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Hours:</span>
-                      <span className="font-medium">{bookingState.hours}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Cleaners:</span>
-                      <span className="font-medium">{bookingState.numCleaners}</span>
-                    </div>
-                  </>
-                )}
-                {currentService?.id === 'office' && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Office Size:</span>
-                      <span className="font-medium">
-                        {(() => {
-                          switch (bookingState.officeSize) {
-                            case 'under-1000': return 'Under 1,000 sq ft';
-                            case '1001-2500': return '1,001 – 2,500 sq ft';
-                            case '2501-5000': return '2,501 – 5,000 sq ft';
-                            case 'over-5000': return 'Over 5,000 sq ft (Custom Quote)';
-                            default: return '-';
-                          }
-                        })()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Washrooms:</span>
-                      <span className="font-medium">{typeof bookingState.numWashrooms === 'number' ? bookingState.numWashrooms : '-'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Kitchen/Break Area:</span>
-                      <span className="font-medium">
-                        {bookingState.hasKitchen ? (
-                          bookingState.kitchenType === 'small' ? 'Yes (Small sink/fridge)' : bookingState.kitchenType === 'full' ? 'Yes (Full kitchen)' : 'Yes'
-                        ) : 'No'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Flooring Types:</span>
-                      <span className="font-medium">{bookingState.flooringTypes && bookingState.flooringTypes.length > 0 ? bookingState.flooringTypes.join(', ') : '-'}</span>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-between">
-                  <span>Access Info:</span>
-                  <span className="font-medium">{bookingState.accessInfo || '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Parking Instructions:</span>
-                  <span className="font-medium">{bookingState.parkingInstructions || '-'}</span>
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-gray-900">Booking Summary</h3>
+                  <p className="text-gray-600">Review your cleaning service details</p>
                 </div>
               </div>
+              
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Service & Schedule */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100 h-full">
+                  <h4 className="font-semibold text-purple-900 mb-3 flex items-center">
+                    <Home className="w-4 h-4 mr-2" />
+                    Service & Schedule
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Service Type:</span>
+                      <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{currentService?.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-semibold text-gray-900">
+                        {bookingState.selectedDate?.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Time:</span>
+                      <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.selectedTime}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Property Details */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 h-full">
+                  <h4 className="font-semibold text-green-900 mb-3 flex items-center">
+                    <Building className="w-4 h-4 mr-2" />
+                    Property Details
+                  </h4>
+                  <div className="space-y-3">
+                    {/* Show house property details only for house services */}
+                    {currentService?.id !== 'office' && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Property Size:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.squareFootage || '0'} sq ft</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Bedrooms:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.bedrooms || '0'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Bathrooms:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.bathrooms || '0'}</span>
+                        </div>
+                        {bookingState.halfBaths > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Half Baths:</span>
+                            <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.halfBaths}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {currentService?.id === 'house-hourly' && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Hours:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.hours || '0'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Cleaners:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{bookingState.numCleaners || '0'}</span>
+                        </div>
+                      </>
+                    )}
+                    {currentService?.id === 'office' && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Office Size:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">
+                            {(() => {
+                              switch (bookingState.officeSize) {
+                                case 'under-1000': return 'Under 1,000 sq ft';
+                                case '1001-2500': return '1,001 – 2,500 sq ft';
+                                case '2501-5000': return '2,501 – 5,000 sq ft';
+                                case 'over-5000': return 'Over 5,000 sq ft';
+                                default: return '-';
+                              }
+                            })()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Washrooms:</span>
+                          <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm">{typeof bookingState.numWashrooms === 'number' ? bookingState.numWashrooms : '-'}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Access & Parking Info */}
+              {(bookingState.accessInfo || bookingState.parkingInstructions) && (
+                <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-100">
+                  <h4 className="font-semibold text-amber-900 mb-3 flex items-center">
+                    <Key className="w-4 h-4 mr-2" />
+                    Access & Parking
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {bookingState.accessInfo && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Access Info:</span>
+                        <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm max-w-xs truncate">{bookingState.accessInfo}</span>
+                      </div>
+                    )}
+                    {bookingState.parkingInstructions && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Parking:</span>
+                        <span className="font-semibold text-gray-900 bg-white px-3 py-1 rounded-full text-sm max-w-xs truncate">{bookingState.parkingInstructions}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Special Instructions & Access Info */}
-            <div className="mb-4 text-left">
-              <label className="block font-semibold mb-1">Cleaning Instructions / Priorities:</label>
+            {/* Additional Information Section */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              {/* Special Instructions */}
+              <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <MessageSquare className="w-4 h-4 mr-2 text-purple-600" />
+                  Cleaning Instructions
+                </h3>
               <textarea
-                className="w-full border rounded p-2 mb-2"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={4}
                 placeholder="If you chose hourly cleaning, please provide your list of priorities here. If you chose a cleaning package, let us know if there's anything particular you'd like us to focus on."
                 value={bookingState.specialInstructions}
                 onChange={e => setBookingState(prev => ({ ...prev, specialInstructions: e.target.value }))}
               />
-              <label className="block font-semibold mb-1">Where should we place the collected garbage at the property?</label>
+              </div>
+
+              {/* Garbage Location */}
+              <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <Trash2 className="w-4 h-4 mr-2 text-purple-600" />
+                  Garbage Disposal
+                </h3>
               <input
-                className="w-full border rounded p-2 mb-2"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="e.g. outside bin, garage, etc."
                 value={bookingState.garbageLocation}
                 onChange={e => setBookingState(prev => ({ ...prev, garbageLocation: e.target.value }))}
               />
             </div>
-            {/* Discount Code & Tip */}
-            <div className="mb-4 text-left">
-              <label className="block font-semibold mb-1">TIP (optional)</label>
+            </div>
+
+            {/* Tip Section */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <Heart className="w-4 h-4 mr-2 text-purple-600" />
+                Tip (Optional)
+              </h3>
+              <div className="flex items-center space-x-3">
               <input
-                className="w-full border rounded p-2 mb-2"
+                  className="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter tip amount"
                 type="number"
                 min="0"
                 value={bookingState.tip}
                 onChange={e => setBookingState(prev => ({ ...prev, tip: e.target.value }))}
               />
+                <span className="text-sm text-gray-500">CAD</span>
+              </div>
             </div>
             {/* Services Not Offered Notice */}
-            <div className="mb-6 text-left bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-              <h4 className="font-bold mb-2">Services Not Offered</h4>
-              <ul className="list-disc ml-6 text-sm text-gray-700">
-                <li>Cleaning of animal feces</li>
-                <li>Mold</li>
-                <li>Exterior of the home (garage, patio, balcony)</li>
-                <li>Moving heavy furniture or fragile items</li>
-                <li>Crawl spaces</li>
-                <li>Bodily fluids</li>
-                <li>Pest removal/infestation</li>
-                <li>Dishes</li>
-                <li>Full wash of ceilings and walls</li>
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-3">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                </div>
+                <h4 className="font-bold text-amber-900 text-lg">Services Not Offered</h4>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-2">
+                <ul className="space-y-1 text-sm text-amber-800">
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Cleaning of animal feces
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Mold removal
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Exterior cleaning (garage, patio, balcony)
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Moving heavy furniture
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Crawl spaces
+                  </li>
+                </ul>
+                <ul className="space-y-1 text-sm text-amber-800">
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Bodily fluids
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Pest removal/infestation
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Dish washing
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Full ceiling/wall washing
+                  </li>
+                  <li className="flex items-center">
+                    <X className="w-3 h-3 mr-2 text-amber-600 flex-shrink-0" />
+                    Fragile item handling
+                  </li>
               </ul>
+              </div>
             </div>
           </div>
         </motion.div>

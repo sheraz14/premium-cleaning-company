@@ -2,9 +2,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Search, MessageCircle, Phone, Mail, ChevronRight, Sparkles, HelpCircle, CheckCircle, Star } from "lucide-react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
-import Flip from "gsap/Flip";
+import { gsap } from "gsap";
+import ScrollTrigger from "../../../gsap-public/src/ScrollTrigger.js";
 import Fuse from 'fuse.js';
 
 const faqs = [
@@ -294,7 +293,7 @@ const faqs = [
     question: "Should I secure my pets during cleaning?",
     answer:
       "For everyone's safety and comfort, we recommend securing pets in a separate area during cleaning. Let us know about your pets so we can take any necessary precautions.",
-    icon: "��",
+    icon: "🐾",
   },
   {
     id: 14,
@@ -534,8 +533,8 @@ const FloatingParticle = ({ delay = 0, position }: { delay?: number; position: a
 );
 
 // Register GSAP plugins
-if (typeof window !== "undefined" && gsap && ScrollTrigger && Flip) {
-  gsap.registerPlugin(ScrollTrigger, Flip);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
 }
 
 // Only keep pure helpers here

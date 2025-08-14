@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TimeSlot {
@@ -210,50 +210,53 @@ export const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                 </div>
               ) : (
                 <div className="space-y-2 sm:space-y-3">
-                  {timeSlots.map((slot, index) => (
-                    <motion.button
-                      key={slot.time}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      onClick={() => slot.available && onTimeChange(slot.time)}
-                      disabled={!slot.available}
-                      className={`
-                        w-full p-3 sm:p-4 rounded-lg border text-left transition-all duration-200
-                        ${selectedTime === slot.time
-                          ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 font-bold text-purple-900'
-                          : slot.available
-                            ? 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                            : 'border-gray-100 bg-gray-50 cursor-not-allowed text-gray-400'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className={`font-semibold ${
-                            slot.available ? 'text-gray-900' : 'text-gray-400'
-                          }`}>
-                            {slot.time}
-                          </p>
-                          <p className={`text-xs sm:text-sm ${
-                            slot.available ? 'text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {slot.duration}
-                          </p>
-                        </div>
-                        {!slot.available && (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                            Booked
-                          </span>
-                        )}
-                        {selectedTime === slot.time && (
-                          <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          </div>
-                        )}
+                  <div className="max-h-56 overflow-y-auto pr-1">
+                    <div className="flex flex-wrap gap-2">
+                      {timeSlots.map((slot, index) => (
+                        <motion.button
+                          key={slot.time}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.04 }}
+                          onClick={() => slot.available && onTimeChange(slot.time)}
+                          disabled={!slot.available}
+                          title={slot.duration}
+                          className={`
+                            px-3 py-1.5 rounded-full border transition-all duration-200 text-xs sm:text-sm
+                            ${selectedTime === slot.time
+                              ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 text-purple-900'
+                              : slot.available
+                                ? 'border-gray-200 hover:border-purple-300 hover:bg-purple-50 text-gray-800'
+                                : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed line-through'
+                            }
+                          `}
+                        >
+                          {slot.time}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                  {selectedTime && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      Window: {timeSlots.find(t => t.time === selectedTime)?.duration}
+                    </p>
+                  )}
+                  
+                  {/* Custom Time Request Message */}
+                  <div className="mt-4 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start space-x-2">
+                      <Phone className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs sm:text-sm text-amber-800 font-medium">
+                          Don't see your preferred time?
+                        </p>
+                        <p className="text-xs text-amber-700">
+                          Give us a call and we can figure something out for you!
+                        </p>
                       </div>
-                    </motion.button>
-                  ))}
+                    </div>
+                  </div>
+                  
                   <div className="mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <h4 className="font-semibold text-blue-900 mb-1 sm:mb-2">
                       What to expect:

@@ -83,7 +83,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <nav className="flex items-center -ml-8">
-            <ul className="flex items-center space-x-2 xl:space-x-4">
+            <ul className="flex items-center space-x-2 xl:space-x-2">
               <li>
                 <Link href="/about-us" className="text-lg font-semibold text-slate-700 hover:text-blue-600 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-white/90 hover:shadow-sm backdrop-blur-sm border border-transparent hover:border-blue-200 whitespace-nowrap">
                   About Us
@@ -172,7 +172,7 @@ const Navbar = () => {
           </nav>
 
           {/* Desktop Action Buttons */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             {/* Book Now Button - matching screenshot style */}
             <Link 
               href="/book-now"
